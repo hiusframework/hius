@@ -1,7 +1,7 @@
-import { getMetadata } from "../utils/metadata.ts";
-import { INJECTABLE_KEY } from "./decorators.ts";
-import type { Container } from "./container.ts";
-import type { Constructor, InjectableMetadata } from "./types.ts";
+import type { Container } from "@/core/container.ts";
+import { INJECTABLE_KEY } from "@/core/decorators.ts";
+import type { Constructor, InjectableMetadata } from "@/core/types.ts";
+import { getMetadata } from "@/utils/metadata.ts";
 
 /**
  * Register a class and its full dependency tree into the container.
@@ -14,7 +14,7 @@ export function registerProvider(container: Container, cls: Constructor): void {
   const meta = getMetadata<InjectableMetadata>(INJECTABLE_KEY, cls);
   if (!meta) {
     throw new Error(
-      `[Hius] ${cls.name} must be decorated with @Injectable() to be used as a provider`
+      `[Hius] ${cls.name} must be decorated with @Injectable() to be used as a provider`,
     );
   }
 

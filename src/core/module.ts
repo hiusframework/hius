@@ -1,18 +1,14 @@
-import { getMetadata } from "../utils/metadata.ts";
-import { MODULE_KEY } from "./decorators.ts";
-import { Container } from "./container.ts";
-import { registerProvider } from "./injector.ts";
-import type { Constructor, ModuleMetadata } from "./types.ts";
+import { Container } from "@/core/container.ts";
+import { MODULE_KEY } from "@/core/decorators.ts";
+import { registerProvider } from "@/core/injector.ts";
+import type { Constructor, ModuleMetadata } from "@/core/types.ts";
+import { getMetadata } from "@/utils/metadata.ts";
 
 /**
  * Recursively load a module tree into a container.
  * visited prevents duplicate processing of shared imported modules.
  */
-function loadModule(
-  container: Container,
-  moduleCls: Constructor,
-  visited: Set<Constructor>
-): void {
+function loadModule(container: Container, moduleCls: Constructor, visited: Set<Constructor>): void {
   if (visited.has(moduleCls)) return;
   visited.add(moduleCls);
 

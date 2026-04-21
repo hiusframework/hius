@@ -1,4 +1,4 @@
-import type { Token } from "./types.ts";
+import type { Token } from "@/core/types.ts";
 
 interface ProviderEntry<T> {
   factory: () => T;

@@ -1,0 +1,58 @@
+[tools]
+bun = "latest"
+
+[env]
+# Bun loads .env automatically — these are fallbacks for mise task context
+_.file = ".env"
+
+[tasks.dev]
+description = "Start development server with hot reload"
+run = "bun --hot index.ts"
+
+[tasks.test]
+description = "Run all tests"
+run = "bun test"
+
+[tasks.typecheck]
+description = "Type-check the project without emitting files"
+run = "bunx tsc --noEmit"
+
+[tasks."db:generate"]
+description = "Generate Drizzle migration files from schema changes"
+run = "bunx drizzle-kit generate --config drizzle.config.ts"
+
+[tasks."db:migrate"]
+description = "Apply pending migrations to the database"
+run = "bunx drizzle-kit migrate --config drizzle.config.ts"
+
+[tasks."db:studio"]
+description = "Open Drizzle Studio (visual DB browser)"
+run = "bunx drizzle-kit studio --config drizzle.config.ts"
+
+[tasks."db:push"]
+description = "Push schema directly to DB without migration files (dev only)"
+run = "bunx drizzle-kit push --config drizzle.config.ts"
+
+[tasks.lint]
+description = "Lint source files with Biome"
+run = "bunx biome lint src/ index.ts drizzle.config.ts"
+
+[tasks.format]
+description = "Format source files with Biome"
+run = "bunx biome format --write src/ index.ts drizzle.config.ts"
+
+[tasks.check]
+description = "Lint + format check (no writes)"
+run = "bunx biome check src/ index.ts drizzle.config.ts"
+
+[tasks."check:fix"]
+description = "Lint + format and apply all fixes including unsafe"
+run = "bunx biome check --write --unsafe src/ index.ts drizzle.config.ts"
+
+[tasks."docs:sync"]
+description = "Verify en/ and ru/ docs are in sync"
+run = "bun docs/sync-check.ts"
+
+[tasks.ci]
+description = "Full CI pipeline: check + typecheck + test + docs sync"
+depends = ["check", "typecheck", "test", "docs:sync"]

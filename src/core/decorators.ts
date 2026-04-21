@@ -1,5 +1,5 @@
-import { defineMetadata } from "../utils/metadata.ts";
-import type { Constructor, ModuleMetadata } from "./types.ts";
+import type { Constructor, ModuleMetadata } from "@/core/types.ts";
+import { defineMetadata } from "@/utils/metadata.ts";
 
 export const MODULE_KEY = "hius:module";
 export const INJECTABLE_KEY = "hius:injectable";

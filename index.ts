@@ -1,4 +1,4 @@
-import { Module, Injectable, bootstrapModule } from "./src/index.ts";
+import { bootstrapModule, Injectable, Module } from "@/index.ts";
 
 @Injectable()
 class UserService {
@@ -25,7 +25,7 @@ class AppModule {}
 const app = bootstrapModule(AppModule);
 
 const service = app.resolve(UserService);
-console.log(service.getUser()); // "ok"
+console.log(`UserService: ${service.getUser()}`); // "ok"
 
 const controller = app.resolve(UserController);
-console.log(controller.handle()); // "ok"
+console.log(`UserController: ${controller.handle()}`); // "ok"
