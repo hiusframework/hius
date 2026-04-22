@@ -104,16 +104,20 @@
 
 ---
 
-## Phase 9 — HTTP Layer ⬜
+## Phase 9 — HTTP Layer ✅
 
 ### Goal: External interface
 
-- [ ] `Bun.serve()` setup (native Bun, no Fastify)
-- [ ] Router abstraction
-- [ ] Controllers (plain classes, no decorators)
-- [ ] Request validation (schema-based)
-- [ ] Error handling (domain errors → HTTP status codes)
-- [ ] Integration with DI container
+- [x] `Bun.serve()` setup (native Bun, no Fastify)
+- [x] Router DSL (`defineRoutes`, `scope`, `resources`, `pipeline`, `draw`, `mergeRoutes`)
+- [x] Controllers (plain classes, no decorators)
+- [x] Pipe middleware chain (composable, scope-aware)
+- [x] Constraint system (route-level guards)
+- [x] Path matching with params (`/users/:id`)
+- [x] Response helpers (`ok`, `created`, `notFound`, `forbidden`, etc.)
+- [x] Integration with DI container (`bootstrapHttp`)
+- [ ] Request validation (schema-based, Zod) _(next)_
+- [ ] Error handling (domain errors → HTTP status codes) _(next)_
 
 ---
 
@@ -129,6 +133,31 @@
 - [ ] Repository integration tests (create, find, soft delete)
 - [ ] e2e tests (HTTP layer — API contracts)
 - [ ] e2e tests (frontend, if applicable)
+
+---
+
+## Phase 10.5 — Citadel-Fortresses Architecture ⬜
+
+### Goal: Enforce module isolation (citadel pattern)
+
+- [ ] Module-owned routes (`routes` field in `@Module`)
+- [ ] Module-level pipes and constraints (`pipes`, `constraints`, `prefix` in `@Module`)
+- [ ] `bootstrapHttp` auto-assembles routes from all modules
+- [ ] Scoped DI containers (enforce `exports` — modules only see exported providers)
+- [ ] EventBus in core (inter-module communication without direct imports)
+
+---
+
+## Phase 14 — Inertia.js Integration ⬜
+
+### Goal: Full-stack DX (AdonisJS-like)
+
+- [ ] Phase A: `inertia()` helper + root layout + asset serving
+- [ ] Phase B: Session middleware + flash messages
+- [ ] Phase C: CSRF protection pipe
+- [ ] Phase D: SSR support (optional, SEO-driven)
+
+_See `docs/en/guides/07_inertia.md` for implementation plan._
 
 ---
 
