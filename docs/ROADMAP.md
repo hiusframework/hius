@@ -116,8 +116,8 @@
 - [x] Path matching with params (`/users/:id`)
 - [x] Response helpers (`ok`, `created`, `notFound`, `forbidden`, etc.)
 - [x] Integration with DI container (`bootstrapHttp`)
-- [ ] Request validation (schema-based, Zod) _(next)_
-- [ ] Error handling (domain errors → HTTP status codes) _(next)_
+- [x] Request validation (schema-based, Zod) — `validate()`, `permit()`, `permitQuery()`
+- [x] Error handling (domain errors → HTTP status codes) — `NotFoundError`, `UnauthorizedError`, `ForbiddenError`, `ConflictError`, `UnprocessableError`
 
 ---
 
@@ -129,8 +129,8 @@
 - [x] Encryption tests (crypto correctness, rotation)
 - [x] Query rewrite tests
 - [x] Repository unit tests (in-memory)
-- [ ] Integration tests (DB — real PostgreSQL)
-- [ ] Repository integration tests (create, find, soft delete)
+- [x] Integration tests (DB — real PostgreSQL)
+- [x] Repository integration tests (create, find, soft delete)
 - [ ] e2e tests (HTTP layer — API contracts)
 - [ ] e2e tests (frontend, if applicable)
 

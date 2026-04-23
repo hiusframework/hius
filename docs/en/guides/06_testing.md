@@ -21,8 +21,15 @@ Bun automatically loads `.env.test` when running tests — set `DATABASE_URL` an
 
 ```
 src/test/
-  users.test.ts       # UsersService unit tests (in-memory repository)
-  encryption.test.ts  # Full encryption layer tests
+  users.test.ts              # UsersService unit tests (in-memory repository)
+  encryption.test.ts         # Full encryption layer tests
+  http/
+    matcher.test.ts          # Path matching (/users/:id → params)
+    pipeline.test.ts         # Pipe chain execution
+    routing.test.ts          # defineRoutes DSL, scope, resources, draw, mergeRoutes
+    router.test.ts           # Full request dispatch (method, params, constraints, pipes)
+    validation.test.ts       # validate() + router 422/400 integration
+    permit.test.ts           # permit() and permitQuery() allow-list filtering
 ```
 
 ## What is tested

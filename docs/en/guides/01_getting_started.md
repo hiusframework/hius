@@ -67,6 +67,10 @@ bun test
 ```
 src/
   core/              # Module system, DI container
+  http/              # HTTP layer (router, pipes, validation)
+    core/            # HiusRequest, response helpers, types
+    routing/         # DSL builder, path matcher, pipeline
+    validation/      # validate(), permit(), permitQuery()
   infra/
     db/
       schema/        # Drizzle table definitions
@@ -74,7 +78,7 @@ src/
       client.ts      # DB connection
     encryption/      # Encryption layer (crypto, blind index, query rewrite)
   domain/            # Pure domain types and interfaces
-  app/               # Application services
+  app/               # Application services and controllers
   config/            # Environment validation
   test/              # Tests
 ```
@@ -83,3 +87,6 @@ src/
 
 - [Modules & Dependency Injection](02_modules_and_di.md)
 - [Database Setup](03_database.md)
+- [HTTP Routing](08_http_routing.md)
+- [Validation & Strong Parameters](09_validation.md)
+- [Tooling](10_tooling.md)

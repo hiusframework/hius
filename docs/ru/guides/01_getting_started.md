@@ -67,6 +67,10 @@ bun test
 ```
 src/
   core/              # Модульная система, DI-контейнер
+  http/              # HTTP-слой (роутер, пайпы, валидация)
+    core/            # HiusRequest, хелперы ответов, типы
+    routing/         # DSL builder, path matcher, pipeline
+    validation/      # validate(), permit(), permitQuery()
   infra/
     db/
       schema/        # Определения Drizzle-таблиц
@@ -74,7 +78,7 @@ src/
       client.ts      # Подключение к БД
     encryption/      # Слой шифрования (crypto, blind index, query rewrite)
   domain/            # Чистые доменные типы и интерфейсы
-  app/               # Сервисы приложения
+  app/               # Сервисы и контроллеры приложения
   config/            # Валидация переменных окружения
   test/              # Тесты
 ```
@@ -83,3 +87,6 @@ src/
 
 - [Модули и внедрение зависимостей](02_modules_and_di.md)
 - [Подключение к базе данных](03_database.md)
+- [HTTP Роутинг](08_http_routing.md)
+- [Валидация и Strong Parameters](09_validation.md)
+- [Инструменты разработки](10_tooling.md)
