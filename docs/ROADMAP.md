@@ -131,7 +131,7 @@
 - [x] Repository unit tests (in-memory)
 - [x] Integration tests (DB — real PostgreSQL)
 - [x] Repository integration tests (create, find, soft delete)
-- [ ] e2e tests (HTTP layer — API contracts)
+- [x] e2e tests (HTTP layer — API contracts) — UsersController full stack
 - [ ] e2e tests (frontend, if applicable)
 
 ---
