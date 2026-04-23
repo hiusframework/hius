@@ -22,8 +22,15 @@ description = "Generate Drizzle migration files from schema changes"
 run = "bunx drizzle-kit generate --config drizzle.config.ts"
 
 [tasks."db:migrate"]
-description = "Apply pending migrations to the database"
+description = "Apply pending migrations to dev database"
 run = "bunx drizzle-kit migrate --config drizzle.config.ts"
+
+[tasks."db:migrate:test"]
+description = "Apply pending migrations to test database"
+run = """
+TEST_URL=$(env $(cat .env.test | grep -v '^#' | xargs) bun -e "console.log(process.env.DATABASE_URL)")
+DATABASE_URL="$TEST_URL" bunx drizzle-kit migrate --config drizzle.config.ts
+"""
 
 [tasks."db:studio"]
 description = "Open Drizzle Studio (visual DB browser)"
@@ -32,6 +39,61 @@ run = "bunx drizzle-kit studio --config drizzle.config.ts"
 [tasks."db:push"]
 description = "Push schema directly to DB without migration files (dev only)"
 run = "bunx drizzle-kit push --config drizzle.config.ts"
+
+[tasks."db:create"]
+description = "Create dev database"
+run = """
+DB=$(bun -e "console.log(new URL(process.env.DATABASE_URL).pathname.slice(1))")
+createdb "$DB" 2>/dev/null && echo "Created: $DB" || echo "Already exists: $DB"
+"""
+
+[tasks."db:drop"]
+description = "Drop dev database (prompts for confirmation)"
+run = """
+DB=$(bun -e "console.log(new URL(process.env.DATABASE_URL).pathname.slice(1))")
+dropdb --if-exists "$DB" && echo "Dropped: $DB"
+"""
+
+[tasks."db:reset"]
+description = "Drop, recreate and migrate dev database"
+run = """
+DB=$(bun -e "console.log(new URL(process.env.DATABASE_URL).pathname.slice(1))")
+dropdb --if-exists "$DB" && echo "Dropped: $DB"
+createdb "$DB" && echo "Created: $DB"
+bunx drizzle-kit migrate --config drizzle.config.ts
+"""
+
+[tasks."db:create:test"]
+description = "Create test database"
+run = """
+DB=$(env $(cat .env.test | grep -v '^#' | xargs) bun -e "console.log(new URL(process.env.DATABASE_URL).pathname.slice(1))")
+createdb "$DB" 2>/dev/null && echo "Created: $DB" || echo "Already exists: $DB"
+"""
+
+[tasks."db:drop:test"]
+description = "Drop test database"
+run = """
+DB=$(env $(cat .env.test | grep -v '^#' | xargs) bun -e "console.log(new URL(process.env.DATABASE_URL).pathname.slice(1))")
+dropdb --if-exists "$DB" && echo "Dropped: $DB"
+"""
+
+[tasks."db:reset:test"]
+description = "Drop, recreate and migrate test database"
+run = """
+DB=$(env $(cat .env.test | grep -v '^#' | xargs) bun -e "console.log(new URL(process.env.DATABASE_URL).pathname.slice(1))")
+TEST_URL=$(env $(cat .env.test | grep -v '^#' | xargs) bun -e "console.log(process.env.DATABASE_URL)")
+dropdb --if-exists "$DB" && echo "Dropped: $DB"
+createdb "$DB" && echo "Created: $DB"
+DATABASE_URL="$TEST_URL" bunx drizzle-kit migrate --config drizzle.config.ts
+"""
+
+[tasks."db:seed"]
+description = "Run seeds on dev database"
+run = "bun seeds/run.ts dev"
+
+[tasks."db:seed:test"]
+description = "Run seeds on test database"
+run = "env $(cat .env.test | grep -v '^#' | xargs) bun seeds/run.ts test"
 
 [tasks.lint]
 description = "Lint source files with Biome"
@@ -48,6 +110,10 @@ run = "bunx biome check src/ index.ts drizzle.config.ts"
 [tasks."check:fix"]
 description = "Lint + format and apply all fixes including unsafe"
 run = "bunx biome check --write --unsafe src/ index.ts drizzle.config.ts"
+
+[tasks."hooks:install"]
+description = "Install lefthook git hooks"
+run = "bunx lefthook install"
 
 [tasks."docs:sync"]
 description = "Verify en/ and ru/ docs are in sync"
