@@ -23,8 +23,8 @@ export function matchPath(pattern: string, pathname: string): MatchResult | null
   const params: Record<string, string> = {};
 
   for (let i = 0; i < patternSegments.length; i++) {
-    const seg = patternSegments[i];
-    const val = pathSegments[i];
+    const seg = patternSegments[i]!;
+    const val = pathSegments[i]!;
 
     if (seg.type === "static") {
       if (seg.value !== val) return null;

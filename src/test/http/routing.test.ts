@@ -82,8 +82,8 @@ describe("defineRoutes", () => {
       });
     });
 
-    expect(routes[0].pipes).toHaveLength(1);
-    expect(routes[0].pipes[0]).toBe(noopPipe);
+    expect(routes[0]!.pipes).toHaveLength(1);
+    expect(routes[0]!.pipes[0]).toBe(noopPipe);
   });
 
   test("scope inherits constraints", () => {
@@ -93,8 +93,8 @@ describe("defineRoutes", () => {
       });
     });
 
-    expect(routes[0].constraints).toHaveLength(1);
-    expect(routes[0].constraints[0]).toBe(blockConstraint);
+    expect(routes[0]!.constraints).toHaveLength(1);
+    expect(routes[0]!.constraints[0]).toBe(blockConstraint);
   });
 
   test("nested scopes accumulate prefix and pipes", () => {
@@ -112,8 +112,8 @@ describe("defineRoutes", () => {
       });
     });
 
-    expect(routes[0].pattern).toBe("/api/v1/me");
-    expect(routes[0].pipes).toEqual([pipeA, pipeB]);
+    expect(routes[0]!.pattern).toBe("/api/v1/me");
+    expect(routes[0]!.pipes).toEqual([pipeA, pipeB]);
   });
 
   test("routes outside scope are unaffected", () => {
@@ -124,9 +124,9 @@ describe("defineRoutes", () => {
       });
     });
 
-    expect(routes[0].pipes).toHaveLength(0);
-    expect(routes[0].constraints).toHaveLength(0);
-    expect(routes[0].pattern).toBe("/health");
+    expect(routes[0]!.pipes).toHaveLength(0);
+    expect(routes[0]!.constraints).toHaveLength(0);
+    expect(routes[0]!.pattern).toBe("/health");
   });
 
   test("resources inside scope uses scope prefix", () => {
@@ -180,8 +180,8 @@ describe("r.draw", () => {
       });
     });
 
-    expect(routes[0].pipes).toEqual([pipe]);
-    expect(routes[1].pipes).toEqual([pipe]);
+    expect(routes[0]!.pipes).toEqual([pipe]);
+    expect(routes[1]!.pipes).toEqual([pipe]);
   });
 
   test("draw inside scope inherits constraints", () => {
@@ -193,7 +193,7 @@ describe("r.draw", () => {
       });
     });
 
-    expect(routes[0].constraints).toEqual([constraint]);
+    expect(routes[0]!.constraints).toEqual([constraint]);
   });
 });
 
@@ -227,7 +227,7 @@ describe("mergeRoutes", () => {
 
     const merged = mergeRoutes(groupA, groupB);
 
-    expect(merged[0].pipes).toEqual([pipe]);
-    expect(merged[1].pipes).toHaveLength(0);
+    expect(merged[0]!.pipes).toEqual([pipe]);
+    expect(merged[1]!.pipes).toHaveLength(0);
   });
 });
