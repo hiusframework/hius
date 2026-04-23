@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { Container } from "@/core/container.ts";
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  UnauthorizedError,
+  UnprocessableError,
+} from "@/domain/errors.ts";
 import type { Constraint, HiusRequest, Pipe } from "@/http/core/types.ts";
 import { Router } from "@/http/router.ts";
 import { defineRoutes } from "@/http/routing/builder.ts";
@@ -114,5 +121,58 @@ describe("Router", () => {
 
     const res = await router.handle(req("GET", "/admin/users"));
     expect(res.status).toBe(200);
+  });
+
+  describe("domain error mapping", () => {
+    function makeThrowingRouter(error: Error) {
+      class ThrowController {
+        async action(): Promise<Response> {
+          throw error;
+        }
+      }
+      const routes = defineRoutes((r) => {
+        r.get("/action", ThrowController, "action");
+      });
+      const container = new Container();
+      container.register(ThrowController, () => new ThrowController());
+      return new Router(routes, container);
+    }
+
+    test("NotFoundError → 404", async () => {
+      const res = await makeThrowingRouter(new NotFoundError("user")).handle(req("GET", "/action"));
+      expect(res.status).toBe(404);
+      expect(await res.json()).toMatchObject({ error: "user not found" });
+    });
+
+    test("UnauthorizedError → 401", async () => {
+      const res = await makeThrowingRouter(new UnauthorizedError()).handle(req("GET", "/action"));
+      expect(res.status).toBe(401);
+    });
+
+    test("ForbiddenError → 403", async () => {
+      const res = await makeThrowingRouter(new ForbiddenError()).handle(req("GET", "/action"));
+      expect(res.status).toBe(403);
+    });
+
+    test("ConflictError → 409", async () => {
+      const res = await makeThrowingRouter(new ConflictError("email already taken")).handle(
+        req("GET", "/action"),
+      );
+      expect(res.status).toBe(409);
+      expect(await res.json()).toMatchObject({ error: "email already taken" });
+    });
+
+    test("UnprocessableError → 422", async () => {
+      const res = await makeThrowingRouter(new UnprocessableError("invalid state")).handle(
+        req("GET", "/action"),
+      );
+      expect(res.status).toBe(422);
+    });
+
+    test("unknown error is rethrown", async () => {
+      const boom = new Error("boom");
+      const router = makeThrowingRouter(boom);
+      expect(router.handle(req("GET", "/action"))).rejects.toThrow("boom");
+    });
   });
 });

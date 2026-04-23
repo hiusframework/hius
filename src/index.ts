@@ -4,6 +4,14 @@ export { Container } from "@/core/container.ts";
 export { Injectable, Module } from "@/core/decorators.ts";
 export { bootstrapModule } from "@/core/module.ts";
 export type { Constructor, InjectableMetadata, ModuleMetadata, Token } from "@/core/types.ts";
+// Domain errors
+export {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  UnauthorizedError,
+  UnprocessableError,
+} from "@/domain/errors.ts";
 export type {
   Constraint,
   Handler,
@@ -17,10 +25,12 @@ export type {
 export {
   badRequest,
   bootstrapHttp,
+  conflict,
   created,
   createHiusRequest,
   defineRoutes,
   forbidden,
+  mergeRoutes,
   noContent,
   notFound,
   ok,
