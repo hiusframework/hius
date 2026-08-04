@@ -22,6 +22,13 @@ export const ModuleConfigSchema = z.object({
 });
 export type ModuleConfig = z.infer<typeof ModuleConfigSchema>;
 
+// Authoring helper for `apps/<domain>/module.config.ts` — validates at
+// definition time (fails fast on a typo'd field) and gives the object
+// literal full type inference without an explicit annotation.
+export function defineModuleConfig(config: z.input<typeof ModuleConfigSchema>): ModuleConfig {
+  return ModuleConfigSchema.parse(config);
+}
+
 export const DomainFilesSchema = z.object({
   routes: z.array(z.string()),
   events: z.array(z.string()),

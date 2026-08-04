@@ -34,6 +34,7 @@
       "name": "hius",
       "version": "0.0.1",
       "dependencies": {
+        "@hius/core": "workspace:*",
         "@hius/spec": "workspace:*",
         "drizzle-orm": "^0.45.2",
         "postgres": "^3.4.9",

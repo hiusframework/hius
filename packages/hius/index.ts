@@ -18,6 +18,7 @@ export type { KeyBundle, KeyProvider } from "./encryption/key-provider";
 export { createEnvKeyProvider, createStaticKeyProvider } from "./encryption/key-provider";
 export type { BackfillResult, BackfillRow, BackfillWriter } from "./encryption/migration";
 export { backfillRows } from "./encryption/migration";
+export { extractManifest } from "./extraction";
 export type { ResourceHandlers, RouteBuilder } from "./http/builder";
 export { defineRoutes, mergeRoutes } from "./http/builder";
 export {
@@ -56,6 +57,8 @@ export type {
   RouteDescriptor,
 } from "./http/types";
 export { ValidationError, validate } from "./http/validate";
+export { loadAllModuleConfigs, loadModuleConfig } from "./module-config";
 export type { Query, RewrittenCondition } from "./query/ast";
 export { and, eq, or } from "./query/ast";
 export { rewriteQuery } from "./query/rewrite";
+export { validateProject } from "./validate-project";

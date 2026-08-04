@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   DomainFilesSchema,
+  defineModuleConfig,
   ExtractedManifestSchema,
   ModuleConfigSchema,
   PACKAGE_NAME,
@@ -22,6 +23,21 @@ test("ModuleConfigSchema accepts a minimal valid config and defaults publicError
 
 test("ModuleConfigSchema rejects a config missing required fields", () => {
   expect(() => ModuleConfigSchema.parse({ name: "billing" })).toThrow();
+});
+
+test("defineModuleConfig validates at definition time and infers the return type", () => {
+  const config = defineModuleConfig({
+    name: "billing",
+    publicApi: [],
+    allowedDependencies: ["users"],
+  });
+
+  expect(config.publicErrors).toEqual([]);
+});
+
+test("defineModuleConfig throws on an invalid config, same as the schema directly", () => {
+  // biome-ignore lint/suspicious/noExplicitAny: deliberately malformed input
+  expect(() => defineModuleConfig({ name: "billing" } as any)).toThrow();
 });
 
 test("DomainFilesSchema requires every convention bucket to be present", () => {
