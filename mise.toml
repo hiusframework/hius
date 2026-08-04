@@ -1,0 +1,43 @@
+[tools]
+bun = "latest"
+
+[tasks.test]
+description = "Run all tests across the workspace"
+run = "bun test"
+
+[tasks.typecheck]
+description = "Type-check every workspace package without emitting files"
+run = """
+for d in packages/*/ apps/*/; do
+  [ -f "$d/tsconfig.json" ] || continue
+  echo "== $d =="
+  (cd "$d" && bunx tsc --noEmit) || exit 1
+done
+"""
+
+[tasks.lint]
+description = "Lint source files with Biome"
+run = "bunx biome lint packages/ apps/"
+
+[tasks.format]
+description = "Format source files with Biome"
+run = "bunx biome format --write packages/ apps/"
+
+[tasks.check]
+description = "Lint + format check (no writes)"
+run = "bunx biome check packages/ apps/"
+
+[tasks."check:fix"]
+description = "Lint + format and apply all fixes including unsafe"
+run = "bunx biome check --write --unsafe packages/ apps/"
+
+[tasks."hooks:install"]
+description = "Install Lefthook git hooks"
+run = "bunx lefthook install"
+
+[tasks.ci]
+description = "Full CI pipeline: check + typecheck + test"
+depends = ["check", "typecheck", "test"]
+
+# db:* tasks (generate/migrate/studio/push) are added once packages/hius
+# gets a Drizzle schema — no schema exists yet.

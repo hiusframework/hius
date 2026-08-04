@@ -1,0 +1,15 @@
+{
+  "name": "@hius/mcp",
+  "version": "0.0.1",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@hius/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "hius": "workspace:*"
+  }
+}

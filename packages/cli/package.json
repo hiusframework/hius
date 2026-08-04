@@ -1,0 +1,18 @@
+{
+  "name": "@hius/cli",
+  "version": "0.0.1",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "hius": "./index.ts"
+  },
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@hius/core": "workspace:*",
+    "citty": "^0.2.2",
+    "hius": "workspace:*"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "hius-workspace",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.7",
+    "@types/bun": "latest",
+    "lefthook": "^2.1.10",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@hius/core",
+  "version": "0.0.1",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@hius/spec": "workspace:*"
+  }
+}
