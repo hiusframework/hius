@@ -1,5 +1,23 @@
 export const PACKAGE_NAME = "hius" as const;
 
-// Explicit composition, events, ts-morph extraction, and the Query
-// AST/Encryption Layer land here alongside discovery.
+// Explicit composition and ts-morph extraction land here alongside
+// discovery and the Query AST/Encryption Layer.
 export * from "./discovery";
+export type { BlindIndex } from "./encryption/blind-index";
+export { createBlindIndex } from "./encryption/blind-index";
+export type { CryptoEngine } from "./encryption/crypto";
+export { createCryptoEngine } from "./encryption/crypto";
+export { DrizzleAdapter } from "./encryption/drizzle-adapter";
+export type {
+  FieldConfig,
+  FieldRegistry,
+  ModelConfig,
+} from "./encryption/field-registry";
+export { createFieldRegistry } from "./encryption/field-registry";
+export type { KeyBundle, KeyProvider } from "./encryption/key-provider";
+export { createEnvKeyProvider, createStaticKeyProvider } from "./encryption/key-provider";
+export type { BackfillResult, BackfillRow, BackfillWriter } from "./encryption/migration";
+export { backfillRows } from "./encryption/migration";
+export type { Query, RewrittenCondition } from "./query/ast";
+export { and, eq, or } from "./query/ast";
+export { rewriteQuery } from "./query/rewrite";
