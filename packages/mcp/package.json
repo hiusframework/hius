@@ -8,8 +8,8 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@hius/core": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "hius": "workspace:*"
+    "hius": "workspace:*",
+    "zod": "^4.4.3"
   }
 }
