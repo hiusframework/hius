@@ -1,5 +1,6 @@
 export const PACKAGE_NAME = "hius" as const;
 
+export { withUniqueConstraintMapping } from "./db/errors";
 // Explicit composition and ts-morph extraction land here alongside
 // discovery, the HTTP layer, and the Query AST/Encryption Layer.
 export * from "./discovery";
@@ -18,16 +19,16 @@ export type { KeyBundle, KeyProvider } from "./encryption/key-provider";
 export { createEnvKeyProvider, createStaticKeyProvider } from "./encryption/key-provider";
 export type { BackfillResult, BackfillRow, BackfillWriter } from "./encryption/migration";
 export { backfillRows } from "./encryption/migration";
-export { extractManifest } from "./extraction";
-export type { ResourceHandlers, RouteBuilder } from "./http/builder";
-export { defineRoutes, mergeRoutes } from "./http/builder";
 export {
   ConflictError,
   ForbiddenError,
   NotFoundError,
   UnauthorizedError,
   UnprocessableError,
-} from "./http/errors";
+} from "./errors";
+export { extractManifest } from "./extraction";
+export type { ResourceHandlers, RouteBuilder } from "./http/builder";
+export { defineRoutes, mergeRoutes } from "./http/builder";
 export { matchPath } from "./http/matcher";
 export type { ParamSchema, ParamType, PermitResult } from "./http/permit";
 export { permit, permitQuery } from "./http/permit";

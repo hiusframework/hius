@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { defineRoutes } from "@/http/builder";
 import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
   UnauthorizedError,
   UnprocessableError,
-} from "@/http/errors";
+} from "@/errors";
+import { defineRoutes } from "@/http/builder";
 import { Router } from "@/http/router";
 import type { Constraint, HiusRequest, Pipe } from "@/http/types";
 

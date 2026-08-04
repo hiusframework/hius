@@ -4,7 +4,7 @@ import {
   NotFoundError,
   UnauthorizedError,
   UnprocessableError,
-} from "./errors";
+} from "../errors";
 import { matchPath } from "./matcher";
 import { executePipeline } from "./pipeline";
 import { createHiusRequest } from "./request";
