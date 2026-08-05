@@ -2,12 +2,14 @@
 import { defineCommand, runMain } from "citty";
 import { consoleCommand } from "./commands/console";
 import { dbCommand } from "./commands/db";
+import { generateCommand } from "./commands/generate";
 import { validateCommand } from "./commands/validate";
 
 export const PACKAGE_NAME = "@hius/cli" as const;
 
 export { consoleCommand } from "./commands/console";
 export { dbCommand } from "./commands/db";
+export { generateCommand } from "./commands/generate";
 export { validateCommand } from "./commands/validate";
 
 const main = defineCommand({
@@ -19,6 +21,7 @@ const main = defineCommand({
     validate: validateCommand,
     console: consoleCommand,
     db: dbCommand,
+    generate: generateCommand,
   },
 });
 
