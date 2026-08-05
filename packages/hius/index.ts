@@ -26,6 +26,11 @@ export {
   UnauthorizedError,
   UnprocessableError,
 } from "./errors";
+export type { EventBus, EventHandler } from "./events/bus";
+export { createEventBus } from "./events/bus";
+export type { RelayResult } from "./events/outbox";
+export { relayOutboxEvents, writeOutboxEvent } from "./events/outbox";
+export { outboxEvents } from "./events/schema";
 export { extractManifest } from "./extraction";
 export type { ResourceHandlers, RouteBuilder } from "./http/builder";
 export { defineRoutes, mergeRoutes } from "./http/builder";
