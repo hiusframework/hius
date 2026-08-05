@@ -53,6 +53,15 @@
         "zod": "^4.4.3",
       },
     },
+    "packages/mcp-adapter": {
+      "name": "@hius/mcp-adapter",
+      "version": "0.0.1",
+      "dependencies": {
+        "@hius/spec": "workspace:*",
+        "@modelcontextprotocol/sdk": "^1.30.0",
+        "zod": "^4.4.3",
+      },
+    },
     "packages/rpc": {
       "name": "@hius/rpc",
       "version": "0.0.1",
@@ -100,6 +109,8 @@
     "@hius/core": ["@hius/core@workspace:packages/core"],
 
     "@hius/mcp": ["@hius/mcp@workspace:packages/mcp"],
+
+    "@hius/mcp-adapter": ["@hius/mcp-adapter@workspace:packages/mcp-adapter"],
 
     "@hius/rpc": ["@hius/rpc@workspace:packages/rpc"],
 

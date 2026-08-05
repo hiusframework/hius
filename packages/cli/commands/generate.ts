@@ -4,6 +4,7 @@ import { generateApp } from "../generators/app";
 import type { HttpMethod } from "../generators/endpoint";
 import { generateEndpoint } from "../generators/endpoint";
 import { generateEvent } from "../generators/event";
+import { generateMcpTool } from "../generators/mcp-tool";
 import { generateModel } from "../generators/model";
 import { generateUseCase } from "../generators/use-case";
 import type { WriteResult } from "../generators/write-file";
@@ -101,6 +102,35 @@ const eventCommand = defineCommand({
   },
 });
 
+const mcpToolCommand = defineCommand({
+  meta: {
+    name: "mcp-tool",
+    description: "Generate a contract exposed as an MCP tool by the app's MCP adapter",
+  },
+  args: {
+    domain: { type: "positional", description: "Domain the operation belongs to", required: true },
+    name: {
+      type: "positional",
+      description: "Operation name, e.g. ChargeCustomer",
+      required: true,
+    },
+    dir: dirArg,
+    force: forceArg,
+  },
+  async run({ args }) {
+    const { results, contractVarName, wiringSnippet } = await generateMcpTool(
+      args.dir,
+      args.domain,
+      args.name,
+      args.force,
+    );
+    reportResults(results);
+    consola.info(
+      `Import the contract as \`${contractVarName}\`, then wire it in: ${wiringSnippet}`,
+    );
+  },
+});
+
 const modelCommand = defineCommand({
   meta: {
     name: "model",
@@ -124,13 +154,14 @@ const modelCommand = defineCommand({
 export const generateCommand = defineCommand({
   meta: {
     name: "generate",
-    description: "Scaffold a domain, use case, endpoint, event handler, or model",
+    description: "Scaffold a domain, use case, endpoint, event handler, MCP tool, or model",
   },
   subCommands: {
     app: appCommand,
     "use-case": useCaseCommand,
     endpoint: endpointCommand,
     event: eventCommand,
+    "mcp-tool": mcpToolCommand,
     model: modelCommand,
   },
 });
