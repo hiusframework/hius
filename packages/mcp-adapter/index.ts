@@ -1,6 +1,6 @@
-import type { Contract } from "@hius/spec";
+import type { ContractBinding } from "@hius/spec";
+import { bindContract } from "@hius/spec";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { z } from "zod";
 
 export const PACKAGE_NAME = "@hius/mcp-adapter" as const;
 
@@ -11,25 +11,11 @@ export const PACKAGE_NAME = "@hius/mcp-adapter" as const;
 // in Fortress and ships with the application, alongside the HTTP and RPC
 // adapters, all generated from the same contracts.
 
-export type ContractBinding<
-  Input extends z.ZodType = z.ZodType,
-  Output extends z.ZodType = z.ZodType,
-> = {
-  contract: Contract<Input, Output>;
-  handler: (input: z.infer<Input>) => Promise<z.infer<Output>>;
-};
-
-// Pairs a contract with the Fortress-side function that actually serves
-// it (typically a thin call into the domain's citadel use-case) — kept
-// as its own step, rather than a plain object literal, so Input/Output
-// stay tied together and a handler can't accidentally be paired with the
-// wrong contract's types.
-export function bindContract<Input extends z.ZodType, Output extends z.ZodType>(
-  contract: Contract<Input, Output>,
-  handler: (input: z.infer<Input>) => Promise<z.infer<Output>>,
-): ContractBinding<Input, Output> {
-  return { contract, handler };
-}
+// bindContract/ContractBinding live in @hius/spec — the RPC adapter binds
+// contracts to handlers the same way, so the pairing isn't MCP-specific.
+// Re-exported here so existing imports from this package keep working.
+export type { ContractBinding };
+export { bindContract };
 
 // MCP tool names are conventionally snake_case (see `@hius/mcp`'s
 // get_architecture/get_domain/validate_change) — contract names are

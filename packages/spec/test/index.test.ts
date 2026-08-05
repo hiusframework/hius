@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import { z } from "zod";
 import {
+  bindContract,
   DomainFilesSchema,
   defineContract,
   defineModuleConfig,
@@ -130,4 +131,22 @@ test("defineContract accepts pre-release and build-metadata semver", () => {
       output: z.object({}),
     }),
   ).not.toThrow();
+});
+
+test("bindContract pairs a contract with its handler, inferring the handler's input/output types", async () => {
+  const contract = defineContract({
+    name: "ChargeCustomer",
+    version: "1.0.0",
+    input: z.object({ customerId: z.string() }),
+    output: z.object({ chargeId: z.string() }),
+  });
+
+  const binding = bindContract(contract, async (input) => ({
+    chargeId: `ch_${input.customerId}`,
+  }));
+
+  expect(binding.contract).toBe(contract);
+  await expect(binding.handler({ customerId: "cust_1" })).resolves.toEqual({
+    chargeId: "ch_cust_1",
+  });
 });

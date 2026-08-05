@@ -103,3 +103,27 @@ export function defineContract<Input extends z.ZodType, Output extends z.ZodType
   }
   return contract;
 }
+
+// Pairs a contract with the Fortress-side function that actually serves
+// it (typically a thin call into the domain's citadel use-case). Shared
+// shape between the RPC adapter and the Application MCP Adapter — both
+// generate from the same contracts, one exposing a typed client, the
+// other exposing MCP tools, so the pairing itself belongs here rather
+// than in either adapter.
+export type ContractBinding<
+  Input extends z.ZodType = z.ZodType,
+  Output extends z.ZodType = z.ZodType,
+> = {
+  contract: Contract<Input, Output>;
+  handler: (input: z.infer<Input>) => Promise<z.infer<Output>>;
+};
+
+// Kept as its own step, rather than a plain object literal, so
+// Input/Output stay tied together and a handler can't accidentally be
+// paired with the wrong contract's types.
+export function bindContract<Input extends z.ZodType, Output extends z.ZodType>(
+  contract: Contract<Input, Output>,
+  handler: (input: z.infer<Input>) => Promise<z.infer<Output>>,
+): ContractBinding<Input, Output> {
+  return { contract, handler };
+}
