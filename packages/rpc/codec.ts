@@ -10,13 +10,24 @@ import { decode as decodeCbor, encode as encodeCbor } from "cbor-x";
 // while debugging.
 export type RpcCodec = {
   contentType: string;
-  encode(value: unknown): Uint8Array | string;
+  // Explicitly Uint8Array<ArrayBuffer>, not the bare `Uint8Array`
+  // (which TS defaults to Uint8Array<ArrayBufferLike>) — that default
+  // isn't assignable to fetch's BodyInit under standard DOM lib types,
+  // only under Bun's own more permissive ambient fetch typings.
+  encode(value: unknown): Uint8Array<ArrayBuffer> | string;
   decode(data: ArrayBuffer | Uint8Array | string): unknown;
 };
 
 export const cborCodec: RpcCodec = {
   contentType: "application/cbor",
-  encode: (value) => encodeCbor(value),
+  // cbor-x returns a Node Buffer (Uint8Array<ArrayBufferLike>) — copied
+  // into a plain Uint8Array<ArrayBuffer> so this is assignable to
+  // fetch's BodyInit under every consumer's TS lib config, not just
+  // Bun's own (a real mismatch: this package typechecks clean inside
+  // the Bun-only hius workspace but not from a SvelteKit app pulling in
+  // standard DOM lib types, where BodyInit is stricter about which
+  // Uint8Array<T> it accepts).
+  encode: (value) => new Uint8Array(encodeCbor(value)),
   decode: (data) =>
     decodeCbor(data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer)),
 };
