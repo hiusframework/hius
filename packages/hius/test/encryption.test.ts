@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { testKeyBundle } from "@hius/test-harness";
 import {
   and,
   createBlindIndex,
@@ -10,11 +11,7 @@ import {
   rewriteQuery,
 } from "@/index";
 
-const keyBundle = {
-  keyId: "test-v1",
-  encryptionKey: Buffer.from("a".repeat(32), "utf8"),
-  hmacKey: Buffer.from("b".repeat(32), "utf8"),
-};
+const keyBundle = testKeyBundle;
 const provider = createStaticKeyProvider(keyBundle);
 const crypto = createCryptoEngine(provider);
 const blindIndex = createBlindIndex(provider);

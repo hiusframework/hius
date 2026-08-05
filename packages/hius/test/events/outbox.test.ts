@@ -1,15 +1,11 @@
 import { afterAll, afterEach, beforeAll, describe, expect, spyOn, test } from "bun:test";
-import { SQL } from "bun";
-import { drizzle } from "drizzle-orm/bun-sql";
+import { createTestDatabase, hasDb } from "@hius/test-harness";
 import { createEventBus } from "@/events/bus";
 import { relayOutboxEvents, writeOutboxEvent } from "@/events/outbox";
 import { outboxEvents } from "@/events/schema";
 
-const hasDb = !!process.env.DATABASE_URL;
-
 describe.if(hasDb)("outbox (integration)", () => {
-  const sql = new SQL(process.env.DATABASE_URL ?? "");
-  const db = drizzle({ client: sql });
+  const { sql, db, teardown } = createTestDatabase();
 
   beforeAll(async () => {
     await sql`
@@ -28,7 +24,7 @@ describe.if(hasDb)("outbox (integration)", () => {
   });
 
   afterAll(async () => {
-    await sql.close();
+    await teardown();
   });
 
   test("a written event is dispatched to a matching handler and marked dispatched", async () => {

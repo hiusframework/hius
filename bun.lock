@@ -45,6 +45,9 @@
         "ts-morph": "^28.0.0",
         "zod": "^4.4.3",
       },
+      "devDependencies": {
+        "@hius/test-harness": "workspace:*",
+      },
     },
     "packages/mcp": {
       "name": "@hius/mcp",
@@ -84,6 +87,14 @@
       "version": "0.0.1",
       "dependencies": {
         "zod": "^4.4.3",
+      },
+    },
+    "packages/test-harness": {
+      "name": "@hius/test-harness",
+      "version": "0.0.1",
+      "dependencies": {
+        "drizzle-orm": "^0.45.2",
+        "hius": "workspace:*",
       },
     },
   },
@@ -177,6 +188,8 @@
     "@hius/shared": ["@hius/shared@workspace:packages/shared"],
 
     "@hius/spec": ["@hius/spec@workspace:packages/spec"],
+
+    "@hius/test-harness": ["@hius/test-harness@workspace:packages/test-harness"],
 
     "@hono/node-server": ["@hono/node-server@2.1.0", "", { "peerDependencies": { "hono": "^4" } }, "sha512-XovyyCCnBzW+zKu+z/zq8hwNs4KOR5rEMAOxo2f40Q5xoOI37IMm6MIg2COOUtUApo0i6850MTBKH2u4QLGIqg=="],
 
