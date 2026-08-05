@@ -13,6 +13,7 @@ const emptyFiles: DomainFiles = {
   models: [],
   citadel: [],
   fortress: [],
+  contracts: [],
 };
 
 function manifest(domains: ExtractedManifest["domains"]): ExtractedManifest {

@@ -36,6 +36,10 @@ export const DomainFilesSchema = z.object({
   models: z.array(z.string()),
   citadel: z.array(z.string()),
   fortress: z.array(z.string()),
+  // A subset of citadel/ — files under citadel/contracts/, called out on
+  // their own because contracts are what the RPC and MCP adapters (and
+  // hius contract diff) are generated from, not just more citadel code.
+  contracts: z.array(z.string()),
 });
 export type DomainFiles = z.infer<typeof DomainFilesSchema>;
 
@@ -52,3 +56,50 @@ export const ExtractedManifestSchema = z.object({
   extractedAt: z.string().datetime(),
 });
 export type ExtractedManifest = z.infer<typeof ExtractedManifestSchema>;
+
+// A domain operation's boundary shape: one named, versioned input/output
+// pair. This is what `citadel/contracts/*.ts` files export, and what the
+// RPC adapter, the Application MCP Adapter, and `hius contract diff` all
+// read instead of reaching into a domain's internals.
+//
+// version is a plain semver string the author bumps by hand — there's no
+// inference from the shape alone (adding a field could be a widening or a
+// breaking rename depending on intent, which the diff can flag but not
+// decide).
+const SEMVER_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z-.]+)?(?:\+[0-9A-Za-z-.]+)?$/;
+
+export type Contract<Input extends z.ZodType = z.ZodType, Output extends z.ZodType = z.ZodType> = {
+  name: string;
+  version: string;
+  input: Input;
+  output: Output;
+  description?: string;
+};
+
+// Authoring helper for `citadel/contracts/*.ts` — same fail-fast-on-typo
+// role as defineModuleConfig, plus full inference of the input/output
+// schema types (a plain object literal typed as `Contract` would widen
+// input/output to the z.ZodType base and lose that).
+export function defineContract<Input extends z.ZodType, Output extends z.ZodType>(contract: {
+  name: string;
+  version: string;
+  input: Input;
+  output: Output;
+  description?: string;
+}): Contract<Input, Output> {
+  if (contract.name.trim().length === 0) {
+    throw new Error("defineContract: name must not be empty");
+  }
+  if (!SEMVER_PATTERN.test(contract.version)) {
+    throw new Error(
+      `defineContract "${contract.name}": version "${contract.version}" is not valid semver (expected e.g. "1.0.0")`,
+    );
+  }
+  if (!(contract.input instanceof z.ZodType)) {
+    throw new Error(`defineContract "${contract.name}": input must be a Zod schema`);
+  }
+  if (!(contract.output instanceof z.ZodType)) {
+    throw new Error(`defineContract "${contract.name}": output must be a Zod schema`);
+  }
+  return contract;
+}

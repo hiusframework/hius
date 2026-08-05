@@ -1,6 +1,8 @@
 import { expect, test } from "bun:test";
+import { z } from "zod";
 import {
   DomainFilesSchema,
+  defineContract,
   defineModuleConfig,
   ExtractedManifestSchema,
   ModuleConfigSchema,
@@ -50,6 +52,7 @@ test("DomainFilesSchema requires every convention bucket to be present", () => {
     models: [],
     citadel: [],
     fortress: [],
+    contracts: [],
   });
   expect(parsed.routes).toEqual(["routes.ts"]);
 });
@@ -66,6 +69,7 @@ test("ExtractedManifestSchema validates a full extracted manifest", () => {
           models: [],
           citadel: [],
           fortress: [],
+          contracts: [],
         },
         actualDependencies: ["users"],
         exports: ["ChargeCustomer"],
@@ -80,4 +84,50 @@ test("ExtractedManifestSchema validates a full extracted manifest", () => {
 
 test("ExtractedManifestSchema rejects a non-ISO extractedAt", () => {
   expect(() => ExtractedManifestSchema.parse({ domains: [], extractedAt: "not-a-date" })).toThrow();
+});
+
+test("defineContract validates at definition time and infers input/output types", () => {
+  const contract = defineContract({
+    name: "ChargeCustomer",
+    version: "1.0.0",
+    input: z.object({ customerId: z.string(), amount: z.number() }),
+    output: z.object({ chargeId: z.string() }),
+  });
+
+  expect(contract.name).toBe("ChargeCustomer");
+  const parsedInput = contract.input.parse({ customerId: "c_1", amount: 100 });
+  expect(parsedInput).toEqual({ customerId: "c_1", amount: 100 });
+});
+
+test("defineContract rejects an empty name", () => {
+  expect(() =>
+    defineContract({
+      name: "",
+      version: "1.0.0",
+      input: z.object({}),
+      output: z.object({}),
+    }),
+  ).toThrow("name must not be empty");
+});
+
+test("defineContract rejects a non-semver version", () => {
+  expect(() =>
+    defineContract({
+      name: "ChargeCustomer",
+      version: "v1",
+      input: z.object({}),
+      output: z.object({}),
+    }),
+  ).toThrow("not valid semver");
+});
+
+test("defineContract accepts pre-release and build-metadata semver", () => {
+  expect(() =>
+    defineContract({
+      name: "ChargeCustomer",
+      version: "1.0.0-beta.1+build.5",
+      input: z.object({}),
+      output: z.object({}),
+    }),
+  ).not.toThrow();
 });

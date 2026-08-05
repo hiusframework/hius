@@ -1,4 +1,5 @@
-import type { ExtractedManifest, ModuleConfig } from "@hius/spec";
+import type { Contract, ExtractedManifest, ModuleConfig } from "@hius/spec";
+import { z } from "zod";
 
 // Must never import from `hius` (the runtime) — this package works only
 // against the extracted manifest, never the runtime that produced it.
@@ -154,4 +155,150 @@ function findCircularDependencies(manifest: ExtractedManifest): Violation[] {
   }
 
   return violations;
+}
+
+// Contract semver diff: patch (compatible extension), minor (new
+// operation), major (breaking — removal/narrowing of a field, or a type
+// change). A field/operation being removed or narrowed is always major;
+// widening (a new optional field, a required field turned optional) is
+// always patch. "minor" only ever describes a whole new operation, never
+// a field-level change within an existing one — narrower than that isn't
+// meaningful at the field level.
+
+export type ContractChangeSeverity = "patch" | "minor" | "major";
+
+export type ContractChange = {
+  contractName: string;
+  severity: ContractChangeSeverity;
+  message: string;
+};
+
+export type ContractDiffResult = {
+  // null when before/after produced no changes at all.
+  severity: ContractChangeSeverity | null;
+  changes: ContractChange[];
+};
+
+const SEVERITY_RANK: Record<ContractChangeSeverity, number> = { patch: 0, minor: 1, major: 2 };
+
+type FieldChange = { severity: ContractChangeSeverity; message: string };
+
+type ObjectShape = { properties: Record<string, unknown>; required: Set<string> };
+
+function objectShapeOf(schema: z.ZodType): ObjectShape | null {
+  const jsonSchema = z.toJSONSchema(schema) as {
+    type?: string;
+    properties?: Record<string, unknown>;
+    required?: string[];
+  };
+  if (jsonSchema.type !== "object" || !jsonSchema.properties) return null;
+  return { properties: jsonSchema.properties, required: new Set(jsonSchema.required ?? []) };
+}
+
+function diffSchema(before: z.ZodType, after: z.ZodType, label: string): FieldChange[] {
+  const beforeShape = objectShapeOf(before);
+  const afterShape = objectShapeOf(after);
+
+  if (!beforeShape || !afterShape) {
+    // Not both plain objects (e.g. a primitive or union payload) — fall
+    // back to comparing the schemas as a whole.
+    const changed =
+      JSON.stringify(z.toJSONSchema(before)) !== JSON.stringify(z.toJSONSchema(after));
+    return changed ? [{ severity: "major", message: `${label} shape changed` }] : [];
+  }
+
+  const changes: FieldChange[] = [];
+
+  for (const field of Object.keys(afterShape.properties)) {
+    if (!(field in beforeShape.properties)) {
+      const required = afterShape.required.has(field);
+      changes.push({
+        severity: required ? "major" : "patch",
+        message: required
+          ? `${label} gained new required field \`${field}\` (breaking)`
+          : `${label} gained new optional field \`${field}\``,
+      });
+      continue;
+    }
+
+    const wasRequired = beforeShape.required.has(field);
+    const isRequired = afterShape.required.has(field);
+    if (!wasRequired && isRequired) {
+      changes.push({
+        severity: "major",
+        message: `${label} field \`${field}\` became required (narrowing)`,
+      });
+    } else if (wasRequired && !isRequired) {
+      changes.push({
+        severity: "patch",
+        message: `${label} field \`${field}\` became optional (widening)`,
+      });
+    }
+
+    if (
+      JSON.stringify(beforeShape.properties[field]) !== JSON.stringify(afterShape.properties[field])
+    ) {
+      changes.push({ severity: "major", message: `${label} field \`${field}\` changed type` });
+    }
+  }
+
+  for (const field of Object.keys(beforeShape.properties)) {
+    if (!(field in afterShape.properties)) {
+      changes.push({ severity: "major", message: `${label} removed field \`${field}\`` });
+    }
+  }
+
+  return changes;
+}
+
+/**
+ * Compares two versions of a domain's contract set, matched by contract
+ * name, and classifies every change per §6.2's semver rules. This is what
+ * `hius contract diff` and the CI merge gate are built on — it only reads
+ * the Zod schemas' JSON Schema shape, never anything about how a contract
+ * is implemented.
+ */
+export function diffContracts(before: Contract[], after: Contract[]): ContractDiffResult {
+  const beforeByName = new Map(before.map((c) => [c.name, c]));
+  const afterByName = new Map(after.map((c) => [c.name, c]));
+  const changes: ContractChange[] = [];
+
+  for (const contract of after) {
+    if (!beforeByName.has(contract.name)) {
+      changes.push({
+        contractName: contract.name,
+        severity: "minor",
+        message: `[Hius] new operation \`${contract.name}\``,
+      });
+    }
+  }
+
+  for (const contract of before) {
+    if (!afterByName.has(contract.name)) {
+      changes.push({
+        contractName: contract.name,
+        severity: "major",
+        message: `[Hius] operation \`${contract.name}\` removed`,
+      });
+    }
+  }
+
+  for (const afterContract of after) {
+    const beforeContract = beforeByName.get(afterContract.name);
+    if (!beforeContract) continue;
+
+    for (const change of diffSchema(beforeContract.input, afterContract.input, "input")) {
+      changes.push({ contractName: afterContract.name, ...change });
+    }
+    for (const change of diffSchema(beforeContract.output, afterContract.output, "output")) {
+      changes.push({ contractName: afterContract.name, ...change });
+    }
+  }
+
+  const severity = changes.reduce<ContractChangeSeverity | null>((max, change) => {
+    if (max === null || SEVERITY_RANK[change.severity] > SEVERITY_RANK[max]) return change.severity;
+    return max;
+  }, null);
+
+  return { severity, changes };
 }

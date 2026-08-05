@@ -30,6 +30,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@hius/spec": "workspace:*",
+        "zod": "^4.4.3",
       },
     },
     "packages/hius": {

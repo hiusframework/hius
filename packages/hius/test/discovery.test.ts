@@ -55,6 +55,17 @@ test("collects nested files under models/, citadel/, and fortress/", async () =>
   expect(billing?.files.fortress).toEqual(["fortress/http/billing.controller.ts"]);
 });
 
+test("collects citadel/contracts/ as its own bucket, still counted under citadel too", async () => {
+  await writeDomainFile("billing", "citadel/contracts/invoice-contract.ts");
+  await writeDomainFile("billing", "citadel/use-cases/charge-customer.ts");
+
+  const [billing] = await discoverDomains(appsDir);
+
+  expect(billing?.files.contracts).toEqual(["citadel/contracts/invoice-contract.ts"]);
+  expect(billing?.files.citadel).toContain("citadel/contracts/invoice-contract.ts");
+  expect(billing?.files.citadel).toContain("citadel/use-cases/charge-customer.ts");
+});
+
 test("detects the optional index.ts registration manifest", async () => {
   await writeDomainFile("billing", "routes.ts");
   await writeDomainFile("users", "routes.ts");

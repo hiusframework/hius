@@ -5,13 +5,18 @@ import type { DiscoveredDomain } from "./discovery";
 import { discoverDomains } from "./discovery";
 
 function allFiles(domain: DiscoveredDomain): string[] {
+  // contracts is a subset of citadel (citadel/contracts/**) — dedupe
+  // through a Set so those files aren't scanned twice.
   return [
-    ...domain.files.routes,
-    ...domain.files.events,
-    ...domain.files.jobs,
-    ...domain.files.models,
-    ...domain.files.citadel,
-    ...domain.files.fortress,
+    ...new Set([
+      ...domain.files.routes,
+      ...domain.files.events,
+      ...domain.files.jobs,
+      ...domain.files.models,
+      ...domain.files.citadel,
+      ...domain.files.fortress,
+      ...domain.files.contracts,
+    ]),
   ];
 }
 

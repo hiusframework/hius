@@ -14,6 +14,9 @@ const FILE_CONVENTIONS: Record<keyof DomainFiles, string> = {
   models: "models/**/*.ts",
   citadel: "citadel/**/*.ts",
   fortress: "fortress/**/*.ts",
+  // Subset of citadel/, scanned separately so contract files are
+  // discoverable on their own without re-deriving them from citadel.
+  contracts: "citadel/contracts/**/*.ts",
 };
 
 async function globFiles(cwd: string, pattern: string): Promise<string[]> {
@@ -50,19 +53,21 @@ async function listSubdirectories(dir: string): Promise<string[]> {
  * ts-morph-based extraction step).
  */
 export async function discoverDomain(domainDir: string, name: string): Promise<DiscoveredDomain> {
-  const [routes, events, jobs, models, citadel, fortress, manifestFiles] = await Promise.all([
-    globFiles(domainDir, FILE_CONVENTIONS.routes),
-    globFiles(domainDir, FILE_CONVENTIONS.events),
-    globFiles(domainDir, FILE_CONVENTIONS.jobs),
-    globFiles(domainDir, FILE_CONVENTIONS.models),
-    globFiles(domainDir, FILE_CONVENTIONS.citadel),
-    globFiles(domainDir, FILE_CONVENTIONS.fortress),
-    globFiles(domainDir, "index.ts"),
-  ]);
+  const [routes, events, jobs, models, citadel, fortress, contracts, manifestFiles] =
+    await Promise.all([
+      globFiles(domainDir, FILE_CONVENTIONS.routes),
+      globFiles(domainDir, FILE_CONVENTIONS.events),
+      globFiles(domainDir, FILE_CONVENTIONS.jobs),
+      globFiles(domainDir, FILE_CONVENTIONS.models),
+      globFiles(domainDir, FILE_CONVENTIONS.citadel),
+      globFiles(domainDir, FILE_CONVENTIONS.fortress),
+      globFiles(domainDir, FILE_CONVENTIONS.contracts),
+      globFiles(domainDir, "index.ts"),
+    ]);
 
   return {
     name,
-    files: { routes, events, jobs, models, citadel, fortress },
+    files: { routes, events, jobs, models, citadel, fortress, contracts },
     hasManifest: manifestFiles.length > 0,
   };
 }

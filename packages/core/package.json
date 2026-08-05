@@ -8,6 +8,7 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@hius/spec": "workspace:*"
+    "@hius/spec": "workspace:*",
+    "zod": "^4.4.3"
   }
 }
