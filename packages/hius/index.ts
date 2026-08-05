@@ -1,5 +1,7 @@
 export const PACKAGE_NAME = "hius" as const;
 
+export type { DomainFiles, ExtractedDomain, ExtractedManifest, ModuleConfig } from "@hius/spec";
+export { defineModuleConfig } from "@hius/spec";
 export { withUniqueConstraintMapping } from "./db/errors";
 // Explicit composition and ts-morph extraction land here alongside
 // discovery, the HTTP layer, and the Query AST/Encryption Layer.
