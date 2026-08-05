@@ -4,6 +4,7 @@ import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
 import { drizzle } from "drizzle-orm/bun-sql";
 import type { EventBus, ExtractedManifest, ModuleConfig } from "hius";
 import { createEventBus, extractManifest, loadAllModuleConfigs } from "hius";
+import { type ReadlineLoopOptions, runReadlineLoop } from "./readline-loop";
 
 export type ConsoleContext = {
   manifest: ExtractedManifest;
@@ -16,6 +17,11 @@ export type ConsoleContext = {
 export type ConsoleIO = {
   log: (...args: unknown[]) => void;
   error: (...args: unknown[]) => void;
+};
+
+export const defaultConsoleIo: ConsoleIO = {
+  log: (...args) => console.log(...args),
+  error: (...args) => console.error(...args),
 };
 
 export async function buildConsoleContext(dir: string, appName?: string): Promise<ConsoleContext> {
@@ -41,13 +47,15 @@ export async function buildConsoleContext(dir: string, appName?: string): Promis
  * inherits this function's local scope, which is exactly why manifest/
  * configs/events/db are destructured into local variables rather than
  * accessed as context.manifest etc — that's what makes them available as
- * bare identifiers to whatever the user types.
+ * bare identifiers to whatever the user types. Line input (history,
+ * Home/End, \-continuation) is handled by readline-loop.ts, shared with
+ * the SQL console.
  */
 export async function startJsConsole(
   context: ConsoleContext,
-  lines: AsyncIterable<string> = console as unknown as AsyncIterable<string>,
-  io: ConsoleIO = console,
+  options: ReadlineLoopOptions & { io?: ConsoleIO } = {},
 ): Promise<void> {
+  const { io = defaultConsoleIo, ...loopOptions } = options;
   // biome-ignore lint/correctness/noUnusedVariables: referenced by eval() below — invisible to static analysis
   const { manifest, configs, events, db } = context;
 
@@ -55,17 +63,14 @@ export async function startJsConsole(
     `Hius console — manifest, configs, events${db ? ", db" : ""} available. Ctrl+D to exit.`,
   );
 
-  for await (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-
+  await runReadlineLoop(async (input) => {
     try {
       // biome-ignore lint/security/noGlobalEval: this eval IS the console — the entire point of the command
-      let result = eval(trimmed);
+      let result = eval(input);
       if (result instanceof Promise) result = await result;
       io.log(result);
     } catch (err) {
       io.error(err);
     }
-  }
+  }, loopOptions);
 }

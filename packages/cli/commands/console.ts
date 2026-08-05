@@ -1,6 +1,5 @@
 import { defineCommand } from "citty";
 import { buildConsoleContext, startJsConsole } from "../console/js-console";
-import { startSqlConsole } from "../console/sql-console";
 
 export const consoleCommand = defineCommand({
   meta: {
@@ -17,21 +16,10 @@ export const consoleCommand = defineCommand({
       type: "string",
       description: "Scope the context to a single domain",
     },
-    db: {
-      type: "boolean",
-      description: "SQL console instead of the JS REPL",
-    },
   },
   async run({ args }) {
-    if (args.db) {
-      if (!process.env.DATABASE_URL) {
-        throw new Error("hius console --db requires DATABASE_URL to be set");
-      }
-      await startSqlConsole(process.env.DATABASE_URL);
-      return;
-    }
-
     const context = await buildConsoleContext(args.dir, args.app);
-    await startJsConsole(context);
+    const label = args.app ?? "hius";
+    await startJsConsole(context, { prompt: (n) => `${label}:${n} > ` });
   },
 });

@@ -2,10 +2,19 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Readable, Writable } from "node:stream";
 import { buildConsoleContext, startJsConsole } from "@/console/js-console";
 
-async function* linesFrom(values: string[]): AsyncGenerator<string> {
-  for (const v of values) yield v;
+function inputFrom(lines: string[]): Readable {
+  return Readable.from(lines.map((l) => `${l}\n`).join(""));
+}
+
+function nullOutput(): Writable {
+  return new Writable({
+    write(_chunk, _encoding, callback) {
+      callback();
+    },
+  });
 }
 
 function captureIo() {
@@ -21,45 +30,37 @@ function captureIo() {
   };
 }
 
+const emptyContext = {
+  manifest: { domains: [], extractedAt: "" },
+  configs: [],
+  events: undefined as never,
+};
+
 describe("startJsConsole", () => {
   test("evaluates plain expressions and logs the result", async () => {
     const { io, logs } = captureIo();
-    await startJsConsole(
-      { manifest: { domains: [], extractedAt: "" }, configs: [], events: undefined as never },
-      linesFrom(["1 + 1"]),
-      io,
-    );
+    await startJsConsole(emptyContext, { input: inputFrom(["1 + 1"]), output: nullOutput(), io });
     expect(logs).toEqual([2]);
-  });
-
-  test("blank lines are skipped, not evaluated", async () => {
-    const { io, logs } = captureIo();
-    await startJsConsole(
-      { manifest: { domains: [], extractedAt: "" }, configs: [], events: undefined as never },
-      linesFrom(["", "  ", "1"]),
-      io,
-    );
-    expect(logs).toEqual([1]);
   });
 
   test("a throwing expression logs to error, doesn't stop the loop", async () => {
     const { io, logs, errors } = captureIo();
-    await startJsConsole(
-      { manifest: { domains: [], extractedAt: "" }, configs: [], events: undefined as never },
-      linesFrom(["throw new Error('boom')", "2 + 2"]),
+    await startJsConsole(emptyContext, {
+      input: inputFrom(["throw new Error('boom')", "2 + 2"]),
+      output: nullOutput(),
       io,
-    );
+    });
     expect(errors).toHaveLength(1);
     expect(logs).toEqual([4]);
   });
 
   test("awaits a Promise result before logging it", async () => {
     const { io, logs } = captureIo();
-    await startJsConsole(
-      { manifest: { domains: [], extractedAt: "" }, configs: [], events: undefined as never },
-      linesFrom(["Promise.resolve(42)"]),
+    await startJsConsole(emptyContext, {
+      input: inputFrom(["Promise.resolve(42)"]),
+      output: nullOutput(),
       io,
-    );
+    });
     expect(logs).toEqual([42]);
   });
 
@@ -68,10 +69,31 @@ describe("startJsConsole", () => {
     const manifest = { domains: [{ name: "billing" }], extractedAt: "now" } as never;
     await startJsConsole(
       { manifest, configs: [{ name: "billing" }] as never, events: { on: () => {} } as never },
-      linesFrom(["manifest.domains.length", "configs[0].name", "typeof events.on"]),
-      io,
+      {
+        input: inputFrom(["manifest.domains.length", "configs[0].name", "typeof events.on"]),
+        output: nullOutput(),
+        io,
+      },
     );
     expect(logs).toEqual([1, "billing", "function"]);
+  });
+
+  test("a custom prompt is used when given", async () => {
+    const chunks: string[] = [];
+    const output = new Writable({
+      write(chunk, _encoding, callback) {
+        chunks.push(chunk.toString());
+        callback();
+      },
+    });
+
+    await startJsConsole(emptyContext, {
+      input: inputFrom(["1"]),
+      output,
+      prompt: (n) => `billing:${n} > `,
+    });
+
+    expect(chunks.join("")).toContain("billing:1 > ");
   });
 });
 
