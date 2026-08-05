@@ -52,8 +52,32 @@ export type RpcTransport = {
 };
 ```
 
-Only `createLocalTransport` — a direct in-process call, for when
-Fortress and Citadel run in the same process — is implemented today. A
-transport that proxies across a deployed Fortress/Citadel contour
-boundary is a second `RpcTransport` implementation to add once that wire
-protocol is settled; `client.call(...)` looks identical either way.
+Two implementations today — `client.call(...)` looks identical either
+way:
+
+- **`createLocalTransport(bindings)`** — a direct in-process call, for
+  when the caller shares a process with the bindings (Fortress and
+  Citadel running as one monolith, for instance).
+- **`createHttpTransport(baseUrl, options?)`** (client) +
+  **`createHttpRpcServer(bindings)`** (server) — a real network call,
+  for when it doesn't: a separately deployed frontend, or Fortress and
+  Citadel split into their own contours. Encodes with
+  [CBOR](https://cbor.io) by default (smaller and faster to parse than
+  JSON, still schemaless — no `.proto`-style IDL, no generated stubs),
+  with plain JSON available on both ends (`{ codec: jsonCodec }` on the
+  client, or just set `Content-Type: application/json` — the server
+  detects it per request) so a call can be inspected with plain curl
+  while debugging. `createHttpRpcServer` returns route descriptors to
+  merge into the app's own `defineRoutes` — an RPC endpoint is just more
+  routes on the same Fortress HTTP surface, not a separate server.
+
+  `OPTIONS /rpc` answers "what can I call here": every bound contract's
+  name, version, description, and JSON-Schema input/output shape — a
+  minimal, built-in discovery endpoint, useful for anything that wants
+  to introspect the API without a hand-maintained list (an external
+  client, a debugging tool, or a future codegen step).
+
+A transport that proxies through gRPC or another cross-language wire
+format is a third `RpcTransport` implementation to add if that becomes
+a real need — nothing about `Contract` or `bindContract` would change
+for it, the same way adding the HTTP transport didn't change either.
