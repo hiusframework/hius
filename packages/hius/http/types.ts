@@ -1,4 +1,4 @@
-export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS";
 
 // Arbitrary per-request context (current user, tenant, etc.)
 export type HiusContext = Record<string, unknown>;

@@ -98,6 +98,10 @@ class RouteBuilder {
     this.addRoute("DELETE", path, handler);
   }
 
+  options(path: string, handler: Handler): void {
+    this.addRoute("OPTIONS", path, handler);
+  }
+
   // Inline a sub-route function into the current builder context,
   // inheriting the current prefix, pipes, and constraints.
   draw(fn: (r: RouteBuilder) => void): void {

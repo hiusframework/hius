@@ -10,13 +10,13 @@ export const PACKAGE_NAME = "@hius/rpc" as const;
 // purpose — that one exposes contracts as MCP tools for external agents,
 // this one gives application code a typed client to call them directly.
 //
-// The transport is deliberately swappable: which wire protocol prod mode
-// should use for calls that cross the Fortress/Citadel boundary isn't
-// settled yet, so only the dev-mode transport is implemented here —
-// direct in-process calls, since Fortress and Citadel run in the same
-// process during development. A prod transport is a second RpcTransport
-// implementation to add once that's decided; the client itself doesn't
-// change either way.
+// The transport is deliberately swappable — two implementations today:
+// createLocalTransport (direct in-process call, for when the caller runs
+// in the same process as the bindings) and createHttpTransport (a real
+// network call, for when it doesn't — e.g. a separately deployed
+// frontend). Either way `client.call(SomeContract, input)` looks
+// identical; nothing about the client branches on which transport is
+// active.
 
 export type RpcTransport = {
   call<Input extends z.ZodType, Output extends z.ZodType>(
@@ -67,3 +67,9 @@ export function createRpcClient(transport: RpcTransport): RpcClient {
     },
   };
 }
+
+export type { RpcCodec } from "./codec";
+export { cborCodec, codecFor, jsonCodec } from "./codec";
+export { createHttpRpcServer } from "./http-server";
+export type { HttpTransportOptions } from "./http-transport";
+export { createHttpTransport } from "./http-transport";

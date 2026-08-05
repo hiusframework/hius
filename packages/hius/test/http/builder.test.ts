@@ -23,9 +23,17 @@ describe("defineRoutes", () => {
       r.put("/c", handler);
       r.patch("/d", handler);
       r.delete("/e", handler);
+      r.options("/f", handler);
     });
 
-    expect(routes.map((r) => r.method)).toEqual(["GET", "POST", "PUT", "PATCH", "DELETE"]);
+    expect(routes.map((r) => r.method)).toEqual([
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ]);
   });
 
   test("resources generates a route per provided handler, skipping the rest", () => {

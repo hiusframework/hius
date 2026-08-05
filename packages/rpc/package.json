@@ -9,6 +9,11 @@
   },
   "dependencies": {
     "@hius/spec": "workspace:*",
+    "cbor-x": "^1.6.0",
+    "hius": "workspace:*",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@hius/test-harness": "workspace:*"
   }
 }
