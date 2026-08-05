@@ -109,3 +109,18 @@ bun --hot ./index.ts
 ```
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+
+## Repository conventions
+
+Don't reference internal planning/development documents (implementation
+plan, decisions log, tech spec, ADRs, or similar) by name in code comments
+or commit messages — they live outside this repository and aren't part of
+the shipped artifact, so a comment that only makes sense next to a document
+nobody here has isn't self-contained. Explain the *why* inline instead.
+
+Any package README and any framework documentation (guides, getting
+started, etc.) must be written in technical-but-accessible language:
+minimize jargon, avoid unnecessary complexity, keep the barrier to entry
+low enough that a beginner developer can follow it. Same rule as above
+applies here too — no references to internal ADRs/decision logs; explain
+the reasoning inline instead.

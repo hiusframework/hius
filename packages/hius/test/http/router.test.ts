@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
 import {
   ConflictError,
   ForbiddenError,
@@ -136,10 +136,20 @@ describe("Router", () => {
     });
 
     test("unknown error is caught and mapped to 500, not rethrown", async () => {
+      // Router logs the unmapped error via console.error before returning
+      // 500 (deliberately — an operator needs to see it). Spy on it rather
+      // than let this deliberately-triggered error print a stack trace
+      // that reads like a real test failure.
+      const errorSpy = spyOn(console, "error").mockImplementation(() => {});
+
       const router = makeThrowingRouter(new Error("boom"));
       const res = await router.handle(req("GET", "/action"));
+
       expect(res.status).toBe(500);
       expect(await res.json()).toMatchObject({ error: "Internal Server Error" });
+      expect(errorSpy).toHaveBeenCalledTimes(1);
+
+      errorSpy.mockRestore();
     });
   });
 });

@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, afterEach, beforeAll, describe, expect, spyOn, test } from "bun:test";
 import { SQL } from "bun";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { createEventBus } from "@/events/bus";
@@ -58,6 +58,12 @@ describe.if(hasDb)("outbox (integration)", () => {
   });
 
   test("a failing handler leaves its row undispatched, and it's retried on the next call", async () => {
+    // relayOutboxEvents logs a failed row via console.error (deliberately —
+    // that's the production behavior an operator needs to see). Spy on it
+    // here rather than let a deliberately-triggered failure print a stack
+    // trace that reads like a real test failure.
+    const errorSpy = spyOn(console, "error").mockImplementation(() => {});
+
     let attempts = 0;
     const bus = createEventBus();
     bus.on("flaky", () => {
@@ -69,13 +75,19 @@ describe.if(hasDb)("outbox (integration)", () => {
 
     const first = await relayOutboxEvents(db, bus);
     expect(first).toEqual({ dispatched: 0, failed: 1 });
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy.mock.calls[0]?.[0]).toContain('event "flaky"');
 
     const second = await relayOutboxEvents(db, bus);
     expect(second).toEqual({ dispatched: 1, failed: 0 });
     expect(attempts).toBe(2);
+
+    errorSpy.mockRestore();
   });
 
   test("one failing row doesn't block the rest of the batch", async () => {
+    const errorSpy = spyOn(console, "error").mockImplementation(() => {});
+
     const bus = createEventBus();
     const succeeded: string[] = [];
     bus.on("mixed", (payload) => {
@@ -92,6 +104,9 @@ describe.if(hasDb)("outbox (integration)", () => {
 
     expect(result).toEqual({ dispatched: 2, failed: 1 });
     expect(succeeded.sort()).toEqual(["good-1", "good-2"]);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+
+    errorSpy.mockRestore();
   });
 
   test("dispatches oldest-first", async () => {
