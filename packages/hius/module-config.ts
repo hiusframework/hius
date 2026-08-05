@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import type { ModuleConfig } from "@hius/spec";
 import { ModuleConfigSchema } from "@hius/spec";
 
@@ -11,7 +12,15 @@ export async function loadModuleConfig(
   appsDir: string,
   domainName: string,
 ): Promise<ModuleConfig | null> {
-  const path = `${appsDir}/${domainName}/module.config.ts`;
+  // Bun.file() and dynamic import() resolve a bare relative string
+  // differently: Bun.file() resolves it against cwd like every other fs
+  // call, but import() treats anything not starting with "/"/"./"/"../"
+  // as a bare package specifier and searches node_modules for it — so
+  // the CLI's default `--dir apps` (relative, no "./") would pass the
+  // Bun.file() existence check and then fail to import with a
+  // "Cannot find module" error blaming node_modules. Resolving to an
+  // absolute path upfront makes both calls agree.
+  const path = `${resolve(appsDir)}/${domainName}/module.config.ts`;
   if (!(await Bun.file(path).exists())) return null;
 
   const mod = await import(path);

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { loadAllContracts, loadContracts } from "@/contracts";
 
 // Fixtures import "zod" by bare specifier to construct real schema
@@ -110,3 +110,29 @@ test("loadAllContracts on an apps/ directory with no domains returns an empty li
   const contracts = await loadAllContracts(appsDir);
   expect(contracts).toEqual([]);
 });
+
+test(
+  "resolves a relative appsDir against the current working directory " +
+    "(regression: import() treats a bare relative path as a package " +
+    "specifier, not a filesystem path, unlike every other file check)",
+  async () => {
+    await writeContractFile(
+      "billing",
+      "citadel/contracts/charge-customer.ts",
+      `import { z } from "zod";
+export default { name: "ChargeCustomer", version: "1.0.0", input: z.object({}), output: z.object({}) };
+`,
+    );
+
+    const originalCwd = process.cwd();
+    process.chdir(dirname(appsDir));
+    try {
+      const contracts = await loadContracts(basename(appsDir), "billing", [
+        "citadel/contracts/charge-customer.ts",
+      ]);
+      expect(contracts[0]?.name).toBe("ChargeCustomer");
+    } finally {
+      process.chdir(originalCwd);
+    }
+  },
+);

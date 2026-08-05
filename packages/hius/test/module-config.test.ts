@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { loadAllModuleConfigs, loadModuleConfig } from "@/module-config";
 
 let appsDir: string;
@@ -52,6 +52,28 @@ test("throws when the config file doesn't match the schema", async () => {
   await writeConfig("billing", `export default { name: "billing" };\n`);
   expect(loadModuleConfig(appsDir, "billing")).rejects.toThrow();
 });
+
+test(
+  "resolves a relative appsDir against the current working directory " +
+    "(regression: Bun.file() and import() resolve a bare relative path " +
+    'differently — "apps" passed the file-exists check but import() ' +
+    "went looking for a package named that in node_modules)",
+  async () => {
+    await writeConfig(
+      "billing",
+      `export default { name: "billing", publicApi: [], allowedDependencies: [] };\n`,
+    );
+
+    const originalCwd = process.cwd();
+    process.chdir(dirname(appsDir));
+    try {
+      const config = await loadModuleConfig(basename(appsDir), "billing");
+      expect(config?.name).toBe("billing");
+    } finally {
+      process.chdir(originalCwd);
+    }
+  },
+);
 
 test("loadAllModuleConfigs skips domains without a config and keeps the rest", async () => {
   await writeConfig(

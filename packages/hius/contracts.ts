@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import type { Contract } from "@hius/spec";
 import { z } from "zod";
 import { discoverDomains } from "./discovery";
@@ -24,9 +25,12 @@ export async function loadContracts(
   domainName: string,
   relFiles: string[],
 ): Promise<Contract[]> {
+  // See module-config.ts's loadModuleConfig for why this must be
+  // resolved to an absolute path before being handed to import().
+  const absAppsDir = resolve(appsDir);
   return Promise.all(
     relFiles.map(async (relFile) => {
-      const path = `${appsDir}/${domainName}/${relFile}`;
+      const path = `${absAppsDir}/${domainName}/${relFile}`;
       const mod = await import(path);
       if (!isContract(mod.default)) {
         throw new Error(

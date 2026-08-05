@@ -5,10 +5,20 @@ import { relayOutboxEvents, writeOutboxEvent } from "@/events/outbox";
 import { outboxEvents } from "@/events/schema";
 
 describe.if(hasDb)("outbox (integration)", () => {
-  const { sql, db, teardown } = createTestDatabase();
+  // Assigned in beforeAll, not up here directly — a describe body runs
+  // even when describe.if's condition is false (only the tests/hooks
+  // inside end up skipped), so createTestDatabase() throwing on a
+  // missing DATABASE_URL would fire regardless of the `hasDb` guard if
+  // it were called at this level instead.
+  let db: ReturnType<typeof createTestDatabase>["db"];
+  let teardown: ReturnType<typeof createTestDatabase>["teardown"];
 
   beforeAll(async () => {
-    await sql`
+    const testDb = createTestDatabase();
+    db = testDb.db;
+    teardown = testDb.teardown;
+
+    await testDb.sql`
       CREATE TABLE IF NOT EXISTS hius_outbox_events (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         event TEXT NOT NULL,
