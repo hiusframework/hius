@@ -39,5 +39,18 @@ run = "bunx lefthook install"
 description = "Full CI pipeline: check + typecheck + test"
 depends = ["check", "typecheck", "test"]
 
-# db:* tasks (generate/migrate/studio/push) are added once packages/hius
-# gets a Drizzle schema — no schema exists yet.
+# Thin wrappers over `hius db <subcommand>`, itself a thin wrapper over
+# drizzle-kit — these exist so `mise run db:migrate` etc. work the same
+# way as every other task here, without anyone needing to know the CLI
+# command underneath changed.
+[tasks."db:generate"]
+description = "Generate a Drizzle migration from schema changes"
+run = "hius db generate"
+
+[tasks."db:migrate"]
+description = "Apply pending Drizzle migrations"
+run = "hius db migrate"
+
+[tasks."db:studio"]
+description = "Open Drizzle Studio"
+run = "hius db studio"

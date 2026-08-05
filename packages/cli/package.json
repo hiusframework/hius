@@ -14,6 +14,7 @@
     "@hius/core": "workspace:*",
     "citty": "^0.2.2",
     "consola": "^3.4.2",
+    "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "hius": "workspace:*",
     "zod": "^4.4.3"
