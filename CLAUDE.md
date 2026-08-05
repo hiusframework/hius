@@ -123,4 +123,11 @@ started, etc.) must be written in technical-but-accessible language:
 minimize jargon, avoid unnecessary complexity, keep the barrier to entry
 low enough that a beginner developer can follow it. Same rule as above
 applies here too — no references to internal ADRs/decision logs; explain
-the reasoning inline instead.
+the reasoning inline instead. Every document ships in both English and
+Russian, kept in sync — English as the source of truth, the Russian
+version reviewed and updated alongside it, not left to drift.
+
+Documentation gets reviewed and brought up to date at the end of every
+phase of work, not just once at the end of the project — treat it as
+part of that phase's definition of done, covering whatever packages or
+behavior the phase actually touched.
