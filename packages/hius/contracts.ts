@@ -1,5 +1,6 @@
 import type { Contract } from "@hius/spec";
 import { z } from "zod";
+import { discoverDomains } from "./discovery";
 
 function isContract(value: unknown): value is Contract {
   return (
@@ -35,4 +36,20 @@ export async function loadContracts(
       return mod.default;
     }),
   );
+}
+
+/**
+ * Loads every contract across every domain under `appsDir` — what
+ * `hius contract diff` compares two snapshots of. Contracts are matched
+ * across snapshots by name alone (see `@hius/core`'s diffContracts), so
+ * this intentionally flattens across domains rather than keeping them
+ * grouped: operation names are expected to be unique app-wide, the same
+ * namespace an MCP tool or RPC call would address them in.
+ */
+export async function loadAllContracts(appsDir: string): Promise<Contract[]> {
+  const domains = await discoverDomains(appsDir);
+  const perDomain = await Promise.all(
+    domains.map((domain) => loadContracts(appsDir, domain.name, domain.files.contracts)),
+  );
+  return perDomain.flat();
 }

@@ -23,6 +23,7 @@
         "consola": "^3.4.2",
         "drizzle-orm": "^0.45.2",
         "hius": "workspace:*",
+        "zod": "^4.4.3",
       },
     },
     "packages/core": {

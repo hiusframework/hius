@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { loadContracts } from "@/contracts";
+import { loadAllContracts, loadContracts } from "@/contracts";
 
 // Fixtures import "zod" by bare specifier to construct real schema
 // instances (loadContracts checks `input instanceof z.ZodType`), so the
@@ -81,4 +81,32 @@ test("throws a clear error when the default export isn't a Contract", async () =
   expect(loadContracts(appsDir, "billing", ["citadel/contracts/broken.ts"])).rejects.toThrow(
     "default export is not a Contract",
   );
+});
+
+test("loadAllContracts flattens contracts across every domain under apps/", async () => {
+  await writeContractFile(
+    "billing",
+    "citadel/contracts/charge-customer.ts",
+    `import { z } from "zod";
+export default { name: "ChargeCustomer", version: "1.0.0", input: z.object({}), output: z.object({}) };
+`,
+  );
+  await writeContractFile(
+    "users",
+    "citadel/contracts/register-user.ts",
+    `import { z } from "zod";
+export default { name: "RegisterUser", version: "1.0.0", input: z.object({}), output: z.object({}) };
+`,
+  );
+  // A domain with no contracts/ files at all shouldn't break discovery.
+  await writeContractFile("notifications", "routes.ts", "export const routes = [];\n");
+
+  const contracts = await loadAllContracts(appsDir);
+
+  expect(contracts.map((c) => c.name).sort()).toEqual(["ChargeCustomer", "RegisterUser"]);
+});
+
+test("loadAllContracts on an apps/ directory with no domains returns an empty list", async () => {
+  const contracts = await loadAllContracts(appsDir);
+  expect(contracts).toEqual([]);
 });

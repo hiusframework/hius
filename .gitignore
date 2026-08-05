@@ -32,7 +32,7 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .idea
 
 # leftover test fixtures if a test process is killed mid-run
-.tmp-contracts-*
+.tmp-*
 
 # Finder (MacOS) folder config
 .DS_Store
