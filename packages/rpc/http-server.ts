@@ -1,5 +1,5 @@
 import type { ContractBinding } from "@hius/spec";
-import { defineRoutes, type RouteDescriptor } from "hius";
+import { defineRoutes, type RouteDescriptor } from "hius/http";
 import { z } from "zod";
 import { codecFor, type RpcCodec } from "./codec";
 
