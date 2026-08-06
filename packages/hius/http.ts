@@ -7,6 +7,13 @@
 // Bun's own module namespace, e.g. Vite's SSR dev module runner, which
 // a SvelteKit frontend's dev server runs under even when the vite
 // process itself was launched via `bun run dev`.
+//
+// bootstrapHttp is deliberately not re-exported here even though it's
+// pure HTTP-layer code — it calls Bun.serve directly, and a consumer
+// without @types/bun in its own tsconfig (svelte-check, for one) fails
+// to typecheck a global it has no ambient declaration for, even if it
+// never actually calls the function. Import bootstrapHttp from "hius"
+// itself in whatever process actually runs the server.
 
 export {
   ConflictError,
@@ -35,7 +42,6 @@ export {
   unprocessable,
 } from "./http/response";
 export { Router } from "./http/router";
-export { bootstrapHttp } from "./http/server";
 export type {
   Constraint,
   Handler,
