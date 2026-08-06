@@ -14,7 +14,7 @@ runtime instead.
 ## Running it
 
 ```bash
-bun packages/mcp/index.ts apps   # appsDir defaults to "apps"
+bun packages/mcp/index.ts domains   # appsDir defaults to "domains"
 ```
 
 Or embed it:
@@ -23,7 +23,7 @@ Or embed it:
 import { createServer } from "@hius/mcp";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-const server = createServer("apps");
+const server = createServer("domains");
 await server.connect(new StdioServerTransport());
 ```
 

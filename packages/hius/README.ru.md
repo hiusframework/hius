@@ -15,10 +15,10 @@
 ```ts
 import { discoverDomains, extractManifest, loadAllModuleConfigs, validateProject } from "hius";
 
-const result = await validateProject("apps");
+const result = await validateProject("domains");
 ```
 
-`discoverDomains` сканирует `apps/*` по файловым/каталоговым соглашениям
+`discoverDomains` сканирует `domains/*` по файловым/каталоговым соглашениям
 (`routes.ts`, `events.ts`, `jobs.ts`, `models/`, `citadel/`, `fortress/`,
 `citadel/contracts/`). `extractManifest` прогоняет ts-morph по реальному
 графу импортов, производя половину факта в
@@ -32,8 +32,8 @@ const result = await validateProject("apps");
 ```ts
 import { loadContracts, loadAllContracts } from "hius";
 
-const billingContracts = await loadContracts("apps", "billing", ["citadel/contracts/charge-customer.ts"]);
-const everyContract = await loadAllContracts("apps");
+const billingContracts = await loadContracts("domains", "billing", ["citadel/contracts/charge-customer.ts"]);
+const everyContract = await loadAllContracts("domains");
 ```
 
 Загружает файлы `citadel/contracts/*.ts` (один вызов `defineContract()`,

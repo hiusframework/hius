@@ -53,10 +53,11 @@ describe("hius validate", () => {
     errorSpy.mockRestore();
   });
 
-  test('--dir defaults to "apps" when omitted', async () => {
-    // No fixture at ./apps relative to cwd is asserted here — this just
-    // confirms the arg default resolves instead of throwing on a missing
-    // required arg. An empty (nonexistent) apps/ dir validates cleanly.
+  test('--dir defaults to "domains" when omitted', async () => {
+    // No fixture at ./domains relative to cwd is asserted here — this
+    // just confirms the arg default resolves instead of throwing on a
+    // missing required arg. An empty (nonexistent) domains/ dir
+    // validates cleanly.
     await expect(runCommand(validateCommand, { rawArgs: [] })).resolves.toBeDefined();
   });
 });

@@ -85,7 +85,7 @@ export function createServer(appsDir: string): McpServer {
 }
 
 if (import.meta.main) {
-  const appsDir = process.argv[2] ?? "apps";
+  const appsDir = process.argv[2] ?? "domains";
   const server = createServer(appsDir);
   await server.connect(new StdioServerTransport());
 }

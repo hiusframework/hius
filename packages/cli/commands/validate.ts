@@ -10,8 +10,8 @@ export const validateCommand = defineCommand({
   args: {
     dir: {
       type: "string",
-      description: "Path to the apps/ directory",
-      default: "apps",
+      description: "Path to the domains/ directory",
+      default: "domains",
     },
   },
   async run({ args }) {

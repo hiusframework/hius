@@ -31,7 +31,7 @@
 bun install
 bun test
 bunx tsc --noEmit
-bunx biome check packages/ apps/
+bunx biome check packages/ domains/ apps/
 mise run hooks:install   # подключает pre-commit хуки Lefthook
 ```
 

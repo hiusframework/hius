@@ -6,6 +6,19 @@ This explains the ideas behind Hius, not just the commands — useful once
 you've been through [Getting started](getting-started.md) and want to know
 why things are shaped the way they are.
 
+## `domains/` and `apps/`
+
+Two different top-level directories, two different things — the same
+distinction Nx and Turborepo draw, for the same reason:
+
+- **`domains/`** — where a Hius domain lives: `citadel/`, `fortress/`,
+  `module.config.ts`, everything `hius validate` checks. Business
+  logic, not something you deploy on its own.
+- **`apps/`** — deployable applications: a web frontend, an API
+  entrypoint, anything that gets built and shipped as its own unit.
+  An app calls into one or more domains; it isn't one itself, and
+  `discoverDomains` never looks inside it.
+
 ## Citadel and Fortress
 
 Every domain splits into two halves:
@@ -35,7 +48,7 @@ enforced network policy, not just documentation.
 Every domain has two representations of its boundaries, and Hius keeps
 them deliberately separate:
 
-- **Intent** — `apps/<domain>/module.config.ts`, hand-written. What this
+- **Intent** — `domains/<domain>/module.config.ts`, hand-written. What this
   domain exposes (`publicApi`), what it's allowed to depend on
   (`allowedDependencies`), which of its errors may cross the boundary
   (`publicErrors`).

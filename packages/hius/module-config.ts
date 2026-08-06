@@ -3,7 +3,7 @@ import type { ModuleConfig } from "@hius/spec";
 import { ModuleConfigSchema } from "@hius/spec";
 
 /**
- * Loads and validates `apps/<domain>/module.config.ts` — the hand-written
+ * Loads and validates `domains/<domain>/module.config.ts` — the hand-written
  * declaration of intent. Returns null if the domain has no config file at
  * all (a missing config is a validator violation, not a loader error —
  * see `@hius/core`'s "missing-config" check).
@@ -16,7 +16,7 @@ export async function loadModuleConfig(
   // differently: Bun.file() resolves it against cwd like every other fs
   // call, but import() treats anything not starting with "/"/"./"/"../"
   // as a bare package specifier and searches node_modules for it — so
-  // the CLI's default `--dir apps` (relative, no "./") would pass the
+  // the CLI's default `--dir domains` (relative, no "./") would pass the
   // Bun.file() existence check and then fail to import with a
   // "Cannot find module" error blaming node_modules. Resolving to an
   // absolute path upfront makes both calls agree.

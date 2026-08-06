@@ -35,7 +35,7 @@ for the actual business logic.
  * one is a boundary violation, not just an incomplete scaffold) plus
  * citadel/ and fortress/ placeholders explaining what belongs in each.
  */
-export async function generateApp(
+export async function generateDomain(
   appsDir: string,
   name: string,
   force = false,

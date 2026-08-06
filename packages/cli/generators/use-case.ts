@@ -32,7 +32,7 @@ describe("${factory}", () => {
 
 /**
  * Generates a use case skeleton under citadel/use-cases/ — framework-
- * agnostic by convention (see generateApp's citadel README), so this
+ * agnostic by convention (see generateDomain's citadel README), so this
  * template has no import from hius in it.
  */
 export async function generateUseCase(

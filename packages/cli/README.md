@@ -13,7 +13,7 @@ This README is a reference for each command.
 ## `hius validate`
 
 ```bash
-hius validate [--dir apps]
+hius validate [--dir domains]
 ```
 
 Compares every domain's `module.config.ts` against its actual import
@@ -51,20 +51,20 @@ existing file.
 
 | Subcommand | Example | Creates |
 |---|---|---|
-| `app <name>` | `hius generate app billing` | `module.config.ts`, `citadel/README.md`, `fortress/README.md` |
+| `domain <name>` | `hius generate domain billing` | `module.config.ts`, `citadel/README.md`, `fortress/README.md` |
 | `use-case <domain> <name>` | `hius generate use-case billing ChargeCustomer` | A citadel use case + test |
 | `endpoint <domain> <method> <path>` | `hius generate endpoint billing POST /invoices` | A fortress HTTP handler + the `r.post(...)` line to add |
 | `event <domain> <name>` | `hius generate event billing invoice.paid` | A citadel event handler + the `bus.on(...)` line to add |
 | `mcp-tool <domain> <operation>` | `hius generate mcp-tool billing ChargeCustomer` | A contract skeleton + the `bindContract(...)` line to add |
 | `model <domain> <Name> field:type ...` | `hius generate model billing Invoice amount:money status:string` | A Drizzle schema + test |
 
-Every subcommand accepts `--dir <path>` (default `apps`) and `--force`
+Every subcommand accepts `--dir <path>` (default `domains`) and `--force`
 (overwrite instead of skipping existing files).
 
 ## `hius contract diff`
 
 ```bash
-hius contract diff --dir apps --against <baseline apps/ dir>
+hius contract diff --dir domains --against <baseline domains/ dir>
 ```
 
 Loads every domain's contracts from both directories and runs

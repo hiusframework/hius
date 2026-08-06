@@ -27,19 +27,19 @@ only way in.
 ## Scaffold a domain
 
 ```bash
-hius generate app billing
+hius generate domain billing
 ```
 
 ```
-✔ apps/billing/module.config.ts
-✔ apps/billing/citadel/README.md
-✔ apps/billing/fortress/README.md
+✔ domains/billing/module.config.ts
+✔ domains/billing/citadel/README.md
+✔ domains/billing/fortress/README.md
 ```
 
 That's the whole shape a Hius domain starts from:
 
 ```
-apps/billing/
+domains/billing/
   module.config.ts   # what this domain exposes, what it may depend on
   citadel/            # framework-agnostic business logic
   fortress/            # framework-aware code — HTTP, adapters
@@ -75,16 +75,16 @@ hius generate endpoint billing POST /invoices
 ```
 
 ```
-✔ apps/billing/citadel/use-cases/charge-customer.ts
-✔ apps/billing/citadel/use-cases/test/charge-customer.test.ts
-✔ apps/billing/fortress/http/post-invoices.ts
+✔ domains/billing/citadel/use-cases/charge-customer.ts
+✔ domains/billing/citadel/use-cases/test/charge-customer.test.ts
+✔ domains/billing/fortress/http/post-invoices.ts
 ℹ Wire it in: r.post("/invoices", postInvoices);
 ```
 
 Notice the generator didn't touch `routes.ts` for you — it printed the
 line to add instead. Hius never text-patches a file you already own;
 generators either create new files or tell you the one line to paste.
-Add that line to `apps/billing/routes.ts` yourself (create the file if
+Add that line to `domains/billing/routes.ts` yourself (create the file if
 this is the domain's first route):
 
 ```ts
@@ -108,11 +108,11 @@ Say `ChargeCustomer` needs to look up a user, so you reach for a
 `users` domain from inside `billing`:
 
 ```bash
-hius generate app users
+hius generate domain users
 ```
 
 ```ts
-// apps/billing/citadel/use-cases/charge-customer.ts
+// domains/billing/citadel/use-cases/charge-customer.ts
 import { findUser } from "../../../users/citadel/service";
 ```
 
@@ -165,7 +165,7 @@ hius generate event billing invoice.paid
 ```
 
 ```
-✔ apps/billing/citadel/handlers/on-invoice-paid.ts
+✔ domains/billing/citadel/handlers/on-invoice-paid.ts
 ℹ Wire it in: bus.on("invoice.paid", onInvoicePaid);
 ```
 
@@ -182,7 +182,7 @@ hius generate mcp-tool billing charge-customer
 ```
 
 ```
-✔ apps/billing/citadel/contracts/charge-customer.ts
+✔ domains/billing/citadel/contracts/charge-customer.ts
 ℹ Import the contract as ChargeCustomerContract, then wire it in:
 bindContract(ChargeCustomerContract, async (input) => {
   throw new Error("ChargeCustomer is not implemented yet");

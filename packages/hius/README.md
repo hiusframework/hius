@@ -15,10 +15,10 @@ this README is a map of what's actually in the package.
 ```ts
 import { discoverDomains, extractManifest, loadAllModuleConfigs, validateProject } from "hius";
 
-const result = await validateProject("apps");
+const result = await validateProject("domains");
 ```
 
-`discoverDomains` scans `apps/*` for the file/directory conventions
+`discoverDomains` scans `domains/*` for the file/directory conventions
 (`routes.ts`, `events.ts`, `jobs.ts`, `models/`, `citadel/`, `fortress/`,
 `citadel/contracts/`). `extractManifest` runs ts-morph over the real
 import graph to produce the fact half of the
@@ -32,8 +32,8 @@ import graph to produce the fact half of the
 ```ts
 import { loadContracts, loadAllContracts } from "hius";
 
-const billingContracts = await loadContracts("apps", "billing", ["citadel/contracts/charge-customer.ts"]);
-const everyContract = await loadAllContracts("apps");
+const billingContracts = await loadContracts("domains", "billing", ["citadel/contracts/charge-customer.ts"]);
+const everyContract = await loadAllContracts("domains");
 ```
 
 Loads `citadel/contracts/*.ts` files (one `defineContract()` call,

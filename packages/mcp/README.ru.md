@@ -13,7 +13,7 @@ CLI. **Никогда не деплоится вместе с приложени
 ## Запуск
 
 ```bash
-bun packages/mcp/index.ts apps   # appsDir по умолчанию "apps"
+bun packages/mcp/index.ts domains   # appsDir по умолчанию "domains"
 ```
 
 Либо встроить напрямую:
@@ -22,7 +22,7 @@ bun packages/mcp/index.ts apps   # appsDir по умолчанию "apps"
 import { createServer } from "@hius/mcp";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-const server = createServer("apps");
+const server = createServer("domains");
 await server.connect(new StdioServerTransport());
 ```
 

@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 import { consola } from "consola";
-import { generateApp } from "../generators/app";
+import { generateDomain } from "../generators/domain";
 import type { HttpMethod } from "../generators/endpoint";
 import { generateEndpoint } from "../generators/endpoint";
 import { generateEvent } from "../generators/event";
@@ -11,8 +11,8 @@ import type { WriteResult } from "../generators/write-file";
 
 const dirArg = {
   type: "string",
-  description: "Path to the apps/ directory",
-  default: "apps",
+  description: "Path to the domains/ directory",
+  default: "domains",
 } as const;
 
 const forceArg = {
@@ -30,15 +30,15 @@ function reportResults(results: WriteResult[]): void {
   }
 }
 
-const appCommand = defineCommand({
-  meta: { name: "app", description: "Scaffold a new domain" },
+const domainCommand = defineCommand({
+  meta: { name: "domain", description: "Scaffold a new domain" },
   args: {
     name: { type: "positional", description: "Domain name", required: true },
     dir: dirArg,
     force: forceArg,
   },
   async run({ args }) {
-    reportResults(await generateApp(args.dir, args.name, args.force));
+    reportResults(await generateDomain(args.dir, args.name, args.force));
   },
 });
 
@@ -157,7 +157,7 @@ export const generateCommand = defineCommand({
     description: "Scaffold a domain, use case, endpoint, event handler, MCP tool, or model",
   },
   subCommands: {
-    app: appCommand,
+    domain: domainCommand,
     "use-case": useCaseCommand,
     endpoint: endpointCommand,
     event: eventCommand,

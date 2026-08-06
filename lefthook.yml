@@ -2,7 +2,7 @@ pre-commit:
   parallel: true
   commands:
     lint:
-      run: bunx biome check packages/ apps/
+      run: bunx biome check packages/ domains/ apps/
       stage_fixed: true
     typecheck:
       run: mise run typecheck

@@ -9,10 +9,10 @@ Hius has no hidden magic: every rule below is either enforced by `hius validate`
 
 ## Where things go (file-system discovery)
 
-A domain is a directory under `apps/`. Files are discovered by name/location, not by registration:
+A domain is a directory under `domains/`. Files are discovered by name/location, not by registration — `apps/` is a different, sibling directory for deployable applications (a web frontend, an API entrypoint), not domains; `discoverDomains` never looks inside it.
 
 ```
-apps/<domain>/
+domains/<domain>/
   module.config.ts   # required — see below
   index.ts            # optional lazy-loading manifest, rarely needed
   routes.ts           # HTTP routes

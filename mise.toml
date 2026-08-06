@@ -8,7 +8,7 @@ run = "bun test"
 [tasks.typecheck]
 description = "Type-check every workspace package without emitting files"
 run = """
-for d in packages/*/ apps/*/; do
+for d in packages/*/ domains/*/ apps/*/; do
   [ -f "$d/tsconfig.json" ] || continue
   echo "== $d =="
   (cd "$d" && bunx tsc --noEmit) || exit 1
@@ -17,19 +17,19 @@ done
 
 [tasks.lint]
 description = "Lint source files with Biome"
-run = "bunx biome lint packages/ apps/"
+run = "bunx biome lint packages/ domains/ apps/"
 
 [tasks.format]
 description = "Format source files with Biome"
-run = "bunx biome format --write packages/ apps/"
+run = "bunx biome format --write packages/ domains/ apps/"
 
 [tasks.check]
 description = "Lint + format check (no writes)"
-run = "bunx biome check packages/ apps/"
+run = "bunx biome check packages/ domains/ apps/"
 
 [tasks."check:fix"]
 description = "Lint + format and apply all fixes including unsafe"
-run = "bunx biome check --write --unsafe packages/ apps/"
+run = "bunx biome check --write --unsafe packages/ domains/ apps/"
 
 [tasks."hooks:install"]
 description = "Install Lefthook git hooks"
@@ -38,6 +38,20 @@ run = "bunx lefthook install"
 [tasks.ci]
 description = "Full CI pipeline: check + typecheck + test"
 depends = ["check", "typecheck", "test"]
+
+# messenger and messenger-web are sibling projects (dogfooding Hius as
+# an external consumer, not nested inside this repo) — see
+# ../mise.toml for the same task at the workspace root; kept here too
+# so `mise run dev` works from inside hius/ as well, without relying
+# on mise's own config-file directory walking.
+[tasks.dev]
+description = "Run the whole dev environment: messenger backend + messenger-web frontend"
+run = """
+trap 'kill 0' EXIT
+(cd ../messenger && bun index.ts) &
+(cd ../messenger-web && bun run dev) &
+wait
+"""
 
 # Thin wrappers over `hius db <subcommand>`, itself a thin wrapper over
 # drizzle-kit — these exist so `mise run db:migrate` etc. work the same

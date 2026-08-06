@@ -30,7 +30,7 @@ covers the ideas behind it in more depth.
 bun install
 bun test
 bunx tsc --noEmit
-bunx biome check packages/ apps/
+bunx biome check packages/ domains/ apps/
 mise run hooks:install   # wires Lefthook pre-commit hooks
 ```
 

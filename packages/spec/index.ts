@@ -4,7 +4,7 @@ export const PACKAGE_NAME = "@hius/spec" as const;
 
 // Two-part intent/fact model:
 //  - ModuleConfigSchema is the hand-written declaration of intent, one per
-//    domain (`apps/<domain>/module.config.ts`): what this domain exposes,
+//    domain (`domains/<domain>/module.config.ts`): what this domain exposes,
 //    what it's allowed to depend on, which of its errors may cross the
 //    boundary.
 //  - ExtractedManifestSchema is the fact, produced by static analysis of
@@ -22,7 +22,7 @@ export const ModuleConfigSchema = z.object({
 });
 export type ModuleConfig = z.infer<typeof ModuleConfigSchema>;
 
-// Authoring helper for `apps/<domain>/module.config.ts` — validates at
+// Authoring helper for `domains/<domain>/module.config.ts` — validates at
 // definition time (fails fast on a typo'd field) and gives the object
 // literal full type inference without an explicit annotation.
 export function defineModuleConfig(config: z.input<typeof ModuleConfigSchema>): ModuleConfig {

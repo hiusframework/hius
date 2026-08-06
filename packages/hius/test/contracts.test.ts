@@ -83,7 +83,7 @@ test("throws a clear error when the default export isn't a Contract", async () =
   );
 });
 
-test("loadAllContracts flattens contracts across every domain under apps/", async () => {
+test("loadAllContracts flattens contracts across every domain under domains/", async () => {
   await writeContractFile(
     "billing",
     "citadel/contracts/charge-customer.ts",
@@ -106,7 +106,7 @@ export default { name: "RegisterUser", version: "1.0.0", input: z.object({}), ou
   expect(contracts.map((c) => c.name).sort()).toEqual(["ChargeCustomer", "RegisterUser"]);
 });
 
-test("loadAllContracts on an apps/ directory with no domains returns an empty list", async () => {
+test("loadAllContracts on a domains/ directory with no domains returns an empty list", async () => {
   const contracts = await loadAllContracts(appsDir);
   expect(contracts).toEqual([]);
 });

@@ -14,7 +14,7 @@
 ## `hius validate`
 
 ```bash
-hius validate [--dir apps]
+hius validate [--dir domains]
 ```
 
 Сравнивает `module.config.ts` каждого домена с его реальным графом
@@ -52,20 +52,20 @@ hius db studio [...]   # drizzle-kit studio, аргументы пробрасы
 
 | Подкоманда | Пример | Создаёт |
 |---|---|---|
-| `app <name>` | `hius generate app billing` | `module.config.ts`, `citadel/README.md`, `fortress/README.md` |
+| `domain <name>` | `hius generate domain billing` | `module.config.ts`, `citadel/README.md`, `fortress/README.md` |
 | `use-case <domain> <name>` | `hius generate use-case billing ChargeCustomer` | Use case в citadel + тест |
 | `endpoint <domain> <method> <path>` | `hius generate endpoint billing POST /invoices` | HTTP-обработчик в fortress + строку `r.post(...)` для добавления |
 | `event <domain> <name>` | `hius generate event billing invoice.paid` | Обработчик события в citadel + строку `bus.on(...)` для добавления |
 | `mcp-tool <domain> <operation>` | `hius generate mcp-tool billing ChargeCustomer` | Заготовку контракта + строку `bindContract(...)` для добавления |
 | `model <domain> <Name> field:type ...` | `hius generate model billing Invoice amount:money status:string` | Drizzle-схему + тест |
 
-Каждая подкоманда принимает `--dir <path>` (по умолчанию `apps`) и
+Каждая подкоманда принимает `--dir <path>` (по умолчанию `domains`) и
 `--force` (перезаписать вместо пропуска существующих файлов).
 
 ## `hius contract diff`
 
 ```bash
-hius contract diff --dir apps --against <baseline apps/ dir>
+hius contract diff --dir domains --against <baseline domains/ dir>
 ```
 
 Загружает контракты каждого домена из обеих директорий и запускает

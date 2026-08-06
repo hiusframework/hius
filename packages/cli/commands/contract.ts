@@ -6,17 +6,17 @@ import { loadAllContracts } from "hius";
 const diffCommand = defineCommand({
   meta: {
     name: "diff",
-    description: "Classify contract changes between two apps/ directories as patch/minor/major",
+    description: "Classify contract changes between two domains/ directories as patch/minor/major",
   },
   args: {
     dir: {
       type: "string",
-      description: "Path to the current apps/ directory",
-      default: "apps",
+      description: "Path to the current domains/ directory",
+      default: "domains",
     },
     against: {
       type: "string",
-      description: "Path to the apps/ directory to compare against (a baseline checkout)",
+      description: "Path to the domains/ directory to compare against (a baseline checkout)",
       required: true,
     },
   },
