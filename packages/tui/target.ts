@@ -1,6 +1,6 @@
-import type { ConsoleContext, ConsoleIO } from "@hius/cli/console";
-import { buildConsoleContext, evalJs, evalSql } from "@hius/cli/console";
 import { SQL } from "bun";
+import type { ConsoleContext, ConsoleIO } from "hius/console";
+import { buildConsoleContext, evalJs, evalSql } from "hius/console";
 
 // v1 (D16, concept_docs/hius-decisions-log.md) — LocalTarget only. A
 // RemoteTarget (SSH to a staging/production host) is the same interface,

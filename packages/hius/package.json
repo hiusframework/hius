@@ -6,6 +6,7 @@
   "private": true,
   "exports": {
     ".": "./index.ts",
+    "./console": "./console.ts",
     "./http": "./http.ts"
   },
   "dependencies": {

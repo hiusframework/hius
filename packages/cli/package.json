@@ -8,8 +8,7 @@
     "hius": "./index.ts"
   },
   "exports": {
-    ".": "./index.ts",
-    "./console": "./console/index.ts"
+    ".": "./index.ts"
   },
   "dependencies": {
     "@hius/core": "workspace:*",
@@ -19,5 +18,16 @@
     "drizzle-orm": "^0.45.2",
     "hius": "workspace:*",
     "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "@hius/tui": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@hius/tui": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@hius/tui": "workspace:*"
   }
 }

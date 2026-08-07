@@ -26,6 +26,15 @@
         "hius": "workspace:*",
         "zod": "^4.4.3",
       },
+      "devDependencies": {
+        "@hius/tui": "workspace:*",
+      },
+      "peerDependencies": {
+        "@hius/tui": "workspace:*",
+      },
+      "optionalPeers": [
+        "@hius/tui",
+      ],
     },
     "packages/core": {
       "name": "@hius/core",
@@ -106,7 +115,6 @@
       "name": "@hius/tui",
       "version": "0.0.1",
       "dependencies": {
-        "@hius/cli": "workspace:*",
         "@opentui/core": "^0.5.1",
         "hius": "workspace:*",
       },
