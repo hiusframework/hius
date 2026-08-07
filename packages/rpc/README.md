@@ -82,6 +82,40 @@ format is a third `RpcTransport` implementation to add if that becomes
 a real need — nothing about `Contract` or `bindContract` would change
 for it, the same way adding the HTTP transport didn't change either.
 
+## mTLS
+
+```ts
+import { createHttpTransport, withMtls } from "@hius/rpc";
+
+const transport = createHttpTransport("https://citadel.internal", {
+  fetch: withMtls({
+    cert: Bun.file("./certs/fortress-client.crt"),
+    key: Bun.file("./certs/fortress-client.key"),
+    ca: Bun.file("./certs/ca.crt"),
+  }),
+});
+```
+
+`withMtls(tls, fetch?)` wraps a fetch function so every call carries the
+given client certificate — nothing new, `fetch`'s own `tls` option is
+already native to Bun; this just attaches it once instead of repeating it
+per call. Pass the result as `createHttpTransport`'s `fetch` option
+instead of the global `fetch`. The server side is the matching
+[`bootstrapHttp`'s `tls` option](../hius/README.md#http-explicit-composition-no-container)
+— set `requestCert: true` plus a `ca` there to require and verify the
+certificate this produces.
+
+Reused rather than built new for a reason worth being explicit about:
+this transport is also what carries traffic across the Fortress↔Citadel
+security boundary once an app splits into that topology — the same
+contract, the same codec, the same client, with mTLS added purely at the
+transport layer. A separate wire protocol for that boundary (gRPC, say)
+was considered and set aside — not because it's impossible, but because
+it would mean a second contract-to-wire-format pipeline next to this one
+for no capability this one doesn't already have, plus a dependency on
+tooling (protobuf codegen, an HTTP/2 stack) this framework doesn't
+otherwise need.
+
 ## Errors
 
 `createHttpTransport` rejects with `RpcError` on a non-2xx response —

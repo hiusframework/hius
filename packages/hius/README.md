@@ -64,6 +64,12 @@ class with. `permit`/`permitQuery` validate request bodies and query
 params against a schema; `pipe`s compose cross-cutting concerns (auth,
 logging) explicitly per-route or per-scope.
 
+`bootstrapHttp`'s `tls` option is a straight passthrough to `Bun.serve`'s
+own — set `requestCert: true` plus a `ca` to require and verify a client
+certificate (mTLS), the Citadel-side half of the Fortress↔Citadel
+transport requirement (see [`@hius/rpc`](../rpc/README.md#mtls) for the
+Fortress-side client half).
+
 ## Events and the outbox
 
 ```ts

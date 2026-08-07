@@ -63,6 +63,12 @@ const server = bootstrapHttp(routes, { port: 3000 });
 запросов и query-параметры по схеме; `pipe`-ы явно композируют сквозную
 логику (аутентификация, логирование) на уровне роута или scope.
 
+`tls`-опция `bootstrapHttp` — прямой passthrough в `Bun.serve`'s
+собственную: `requestCert: true` плюс `ca` требуют и проверяют клиентский
+сертификат (mTLS) — Citadel-сторона требования mTLS для транспорта
+Fortress↔Citadel (клиентскую, Fortress-сторону см. в
+[`@hius/rpc`](../rpc/README.ru.md#mtls)).
+
 ## События и outbox
 
 ```ts
