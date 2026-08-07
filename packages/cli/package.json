@@ -8,7 +8,8 @@
     "hius": "./index.ts"
   },
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./console": "./console/index.ts"
   },
   "dependencies": {
     "@hius/core": "workspace:*",

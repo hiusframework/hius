@@ -4,7 +4,13 @@ import type { ConsoleIO } from "./js-console";
 import { defaultConsoleIo } from "./js-console";
 import { type ReadlineLoopOptions, runReadlineLoop } from "./readline-loop";
 
-async function runOne(sql: SQL, input: string, io: ConsoleIO): Promise<void> {
+/**
+ * Evaluates one line against the database — \tables and \describe
+ * <table> as meta-commands, anything else runs as raw SQL. Reusable core
+ * both `startSqlConsole`'s readline loop and `@hius/tui`'s embedded
+ * console pane call, one line at a time.
+ */
+export async function evalSql(sql: SQL, input: string, io: ConsoleIO): Promise<void> {
   try {
     if (input === "\\tables") {
       const rows = (await sql`
@@ -43,9 +49,8 @@ async function runOne(sql: SQL, input: string, io: ConsoleIO): Promise<void> {
 }
 
 /**
- * A SQL console: \tables and \describe <table> as meta-commands, anything
- * else runs as raw SQL. Separate from the JS console (js-console.ts) — a
- * SQL prompt shouldn't also try to be a JS REPL. Line input (history,
+ * A SQL console. Separate from the JS console (js-console.ts) — a SQL
+ * prompt shouldn't also try to be a JS REPL. Line input (history,
  * Home/End, \-continuation for a long query) is handled by
  * readline-loop.ts, shared with the JS console.
  */
@@ -58,7 +63,7 @@ export async function startSqlConsole(
   consola.info("Hius SQL console — \\tables, \\describe <table>, or raw SQL. Ctrl+D to exit.");
 
   try {
-    await runReadlineLoop((input) => runOne(sql, input, io), loopOptions);
+    await runReadlineLoop((input) => evalSql(sql, input, io), loopOptions);
   } finally {
     await sql.close();
   }
