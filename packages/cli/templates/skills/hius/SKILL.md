@@ -108,6 +108,26 @@ bus.on("invoice.paid", async (payload) => { /* must be idempotent — at-least-o
 
 Event handlers must be idempotent: a crash between a handler succeeding and the outbox row being marked dispatched redelivers that row on the next relay pass.
 
+## Generator commands
+
+Every generator either creates new files or prints the one line you need to
+paste into a file you already own — never text-patches an existing file:
+
+```bash
+hius generate domain <name>
+hius generate use-case <domain> <name>
+hius generate endpoint <domain> <METHOD> <path>
+hius generate event <domain> <name>
+hius generate mcp-tool <domain> <operation>
+hius generate model <domain> <Name> field:type ...
+```
+
+Every subcommand accepts `--dir <path>` (default `domains`) and `--force`;
+every subcommand except `domain` also accepts `--acronym <words>` for names
+that should keep their own exact casing (`HR`, `API`, …) instead of only a
+capitalized first letter. Run `hius generate <command> --help` for a
+subcommand's exact arguments rather than guessing at flag names.
+
 ## Before considering a change done
 
 Run `hius validate` (or call the MCP tool `validate_change`) — it's the same engine either way, one core with two interfaces. A clean result means every domain's `module.config.ts` matches its actual imports; nothing else is implied. Use `get_architecture` for the full dependency graph and `get_domain(name)` for a single domain's context pack (public API, dependencies, files, exports) before making changes that cross a boundary, rather than inferring structure from grep.
