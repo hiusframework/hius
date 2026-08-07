@@ -1,10 +1,10 @@
 import { join } from "node:path";
-import { toCamelCase, toKebabCase, toPascalCase } from "./naming";
+import { type Acronyms, toCamelCase, toKebabCase, toPascalCase } from "./naming";
 import type { WriteResult } from "./write-file";
 import { writeGeneratedFile } from "./write-file";
 
-function useCaseTemplate(name: string): string {
-  const factory = `create${toPascalCase(name)}`;
+function useCaseTemplate(name: string, acronyms?: Acronyms): string {
+  const factory = `create${toPascalCase(name, acronyms)}`;
   return `// Explicit composition — dependencies are passed in, not resolved
 // through a container. Replace the empty deps/args below with what this
 // use case actually needs.
@@ -15,16 +15,17 @@ export const ${factory} = (/* deps */) =>
 `;
 }
 
-function useCaseTestTemplate(name: string, domain: string): string {
-  const factory = `create${toPascalCase(name)}`;
+function useCaseTestTemplate(name: string, domain: string, acronyms?: Acronyms): string {
+  const factory = `create${toPascalCase(name, acronyms)}`;
   const file = toKebabCase(name);
+  const varName = toCamelCase(name, acronyms);
   return `import { describe, expect, test } from "bun:test";
 import { ${factory} } from "../${file}";
 
 describe("${factory}", () => {
   test("TODO: replace with a real expectation for ${domain}/${file}", async () => {
-    const ${toCamelCase(name)} = ${factory}();
-    expect(${toCamelCase(name)}).toBeDefined();
+    const ${varName} = ${factory}();
+    expect(${varName}).toBeDefined();
   });
 });
 `;
@@ -40,16 +41,17 @@ export async function generateUseCase(
   domain: string,
   name: string,
   force = false,
+  acronyms?: Acronyms,
 ): Promise<WriteResult[]> {
   const domainDir = join(appsDir, toKebabCase(domain));
   const file = toKebabCase(name);
   const useCasesDir = join(domainDir, "citadel", "use-cases");
 
   return Promise.all([
-    writeGeneratedFile(join(useCasesDir, `${file}.ts`), useCaseTemplate(name), force),
+    writeGeneratedFile(join(useCasesDir, `${file}.ts`), useCaseTemplate(name, acronyms), force),
     writeGeneratedFile(
       join(useCasesDir, "test", `${file}.test.ts`),
-      useCaseTestTemplate(name, domain),
+      useCaseTestTemplate(name, domain, acronyms),
       force,
     ),
   ]);

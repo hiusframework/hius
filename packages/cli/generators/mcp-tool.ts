@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { toKebabCase, toPascalCase } from "./naming";
+import { type Acronyms, toKebabCase, toPascalCase } from "./naming";
 import type { WriteResult } from "./write-file";
 import { writeGeneratedFile } from "./write-file";
 
@@ -43,9 +43,10 @@ export async function generateMcpTool(
   domain: string,
   operationName: string,
   force = false,
+  acronyms?: Acronyms,
 ): Promise<GeneratedMcpTool> {
   const domainDir = join(appsDir, toKebabCase(domain));
-  const contractName = toPascalCase(operationName);
+  const contractName = toPascalCase(operationName, acronyms);
   const contractFile = toKebabCase(operationName);
   const contractPath = join(domainDir, "citadel", "contracts", `${contractFile}.ts`);
   const contractVarName = `${contractName}Contract`;

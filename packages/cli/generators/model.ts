@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { toKebabCase, toPascalCase } from "./naming";
+import { type Acronyms, toKebabCase, toPascalCase } from "./naming";
 import type { WriteResult } from "./write-file";
 import { writeGeneratedFile } from "./write-file";
 
@@ -46,7 +46,12 @@ export function parseFieldSpecs(args: string[]): FieldSpec[] {
   });
 }
 
-function schemaTemplate(domain: string, modelName: string, fields: FieldSpec[]): string {
+function schemaTemplate(
+  domain: string,
+  modelName: string,
+  fields: FieldSpec[],
+  acronyms?: Acronyms,
+): string {
   const tableName = `${toKebabCase(domain)}_${toKebabCase(modelName)}s`.replace(/-/g, "_");
   const varName = `${toKebabCase(modelName)}s`.replace(/-/g, "_");
 
@@ -66,8 +71,8 @@ ${columnLines.join("\n")}
   deleted_at: timestamp("deleted_at", { withTimezone: true }),
 });
 
-export type ${toPascalCase(modelName)} = typeof ${varName}.$inferSelect;
-export type New${toPascalCase(modelName)} = typeof ${varName}.$inferInsert;
+export type ${toPascalCase(modelName, acronyms)} = typeof ${varName}.$inferSelect;
+export type New${toPascalCase(modelName, acronyms)} = typeof ${varName}.$inferInsert;
 `;
 }
 
@@ -104,6 +109,7 @@ export async function generateModel(
   modelName: string,
   fieldArgs: string[],
   force = false,
+  acronyms?: Acronyms,
 ): Promise<WriteResult[]> {
   const fields = parseFieldSpecs(fieldArgs);
   const domainDir = join(appsDir, toKebabCase(domain));
@@ -113,7 +119,7 @@ export async function generateModel(
   return Promise.all([
     writeGeneratedFile(
       join(modelsDir, `${file}.ts`),
-      schemaTemplate(domain, modelName, fields),
+      schemaTemplate(domain, modelName, fields, acronyms),
       force,
     ),
     writeGeneratedFile(

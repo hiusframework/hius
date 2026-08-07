@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { toCamelCase, toKebabCase } from "./naming";
+import { type Acronyms, toCamelCase, toKebabCase } from "./naming";
 import type { WriteResult } from "./write-file";
 import { writeGeneratedFile } from "./write-file";
 
@@ -34,10 +34,12 @@ export async function generateEndpoint(
   method: HttpMethod,
   path: string,
   force = false,
+  acronyms?: Acronyms,
 ): Promise<GeneratedEndpoint> {
   const domainDir = join(appsDir, toKebabCase(domain));
   const handlerName = toCamelCase(
     `${method.toLowerCase()}-${path.replace(/[/:]/g, "-")}` || "handler",
+    acronyms,
   );
   const handlerFile = toKebabCase(handlerName);
   const handlerPath = join(domainDir, "fortress", "http", `${handlerFile}.ts`);

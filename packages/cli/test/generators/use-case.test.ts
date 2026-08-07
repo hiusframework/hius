@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createAcronyms } from "@/generators/naming";
 import { generateUseCase } from "@/generators/use-case";
 
 let appsDir: string;
@@ -44,5 +45,29 @@ describe("generateUseCase", () => {
         join(appsDir, "billing", "citadel", "use-cases", "charge-customer.ts"),
       ).exists(),
     ).toBe(true);
+  });
+
+  test("without a registered acronym, HR degrades to a plain capitalized word", async () => {
+    await generateUseCase(appsDir, "hr", "sync-hr-portal");
+
+    const file = await Bun.file(
+      join(appsDir, "hr", "citadel", "use-cases", "sync-hr-portal.ts"),
+    ).text();
+
+    expect(file).toContain("export const createSyncHrPortal");
+  });
+
+  test("a registered acronym keeps its exact casing in the generated factory name", async () => {
+    await generateUseCase(appsDir, "hr", "sync-hr-portal", false, createAcronyms(["HR"]));
+
+    const file = await Bun.file(
+      join(appsDir, "hr", "citadel", "use-cases", "sync-hr-portal.ts"),
+    ).text();
+    const test = await Bun.file(
+      join(appsDir, "hr", "citadel", "use-cases", "test", "sync-hr-portal.test.ts"),
+    ).text();
+
+    expect(file).toContain("export const createSyncHRPortal");
+    expect(test).toContain('import { createSyncHRPortal } from "../sync-hr-portal"');
   });
 });

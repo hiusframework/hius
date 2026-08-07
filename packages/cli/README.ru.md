@@ -62,6 +62,20 @@ hius db studio [...]   # drizzle-kit studio, аргументы пробрасы
 Каждая подкоманда принимает `--dir <path>` (по умолчанию `domains`) и
 `--force` (перезаписать вместо пропуска существующих файлов).
 
+Каждая подкоманда, кроме `domain`, также принимает `--acronym <words>`
+(через запятую) — для имён, которые должны сохранить собственный
+регистр целиком, а не только с заглавной первой буквой:
+
+```bash
+hius generate use-case hr sync-hr-portal --acronym HR
+# export const createSyncHRPortal = ... (а не createSyncHrPortal)
+```
+
+Никакие акронимы не встроены по умолчанию — `hius generate mcp-tool
+billing api-lookup` без `--acronym API` даст `ApiLookup`, а не
+`APILookup`. Какие слова считать акронимами — решение проекта, а не то,
+что Hius должен угадывать сам.
+
 ## `hius contract diff`
 
 ```bash

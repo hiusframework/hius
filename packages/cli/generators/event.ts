@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { toCamelCase, toKebabCase } from "./naming";
+import { type Acronyms, toCamelCase, toKebabCase } from "./naming";
 import type { WriteResult } from "./write-file";
 import { writeGeneratedFile } from "./write-file";
 
@@ -32,9 +32,10 @@ export async function generateEvent(
   domain: string,
   eventName: string,
   force = false,
+  acronyms?: Acronyms,
 ): Promise<GeneratedEvent> {
   const domainDir = join(appsDir, toKebabCase(domain));
-  const handlerName = toCamelCase(`on-${eventName}`);
+  const handlerName = toCamelCase(`on-${eventName}`, acronyms);
   const handlerFile = toKebabCase(handlerName);
   const handlerPath = join(domainDir, "citadel", "handlers", `${handlerFile}.ts`);
 

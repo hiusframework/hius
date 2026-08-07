@@ -61,6 +61,20 @@ existing file.
 Every subcommand accepts `--dir <path>` (default `domains`) and `--force`
 (overwrite instead of skipping existing files).
 
+Every subcommand except `domain` also accepts `--acronym <words>`
+(comma-separated) for names that should keep their own exact casing
+instead of only their first letter capitalized:
+
+```bash
+hius generate use-case hr sync-hr-portal --acronym HR
+# export const createSyncHRPortal = ... (not createSyncHrPortal)
+```
+
+No acronyms are built in — `hius generate mcp-tool billing api-lookup`
+without `--acronym API` produces `ApiLookup`, not `APILookup`. Which
+words count as acronyms is a project decision, not something Hius
+should guess at.
+
 ## `hius contract diff`
 
 ```bash
