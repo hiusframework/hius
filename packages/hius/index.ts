@@ -26,8 +26,24 @@ export type {
 export { createFieldRegistry } from "./encryption/field-registry";
 export type { KeyBundle, KeyProvider } from "./encryption/key-provider";
 export { createEnvKeyProvider, createStaticKeyProvider } from "./encryption/key-provider";
-export type { BackfillResult, BackfillRow, BackfillWriter } from "./encryption/migration";
-export { backfillRows } from "./encryption/migration";
+export type {
+  BackfillResult,
+  BackfillRow,
+  BackfillWriter,
+  DualWriteResult,
+  RollbackResult,
+  RollbackRow,
+  RollbackWriter,
+  VerifyResult,
+  VerifyRow,
+} from "./encryption/migration";
+export {
+  backfillRows,
+  dualRead,
+  dualWrite,
+  rollbackRows,
+  verifyBackfill,
+} from "./encryption/migration";
 export {
   ConflictError,
   ForbiddenError,

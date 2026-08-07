@@ -107,6 +107,38 @@ const row = await adapter.findOne(usersTable, condition);
 (`createStaticKeyProvider` для тестов, `createEnvKeyProvider` для реальных
 деплоев) может хранить сразу несколько ключей именно по этой причине.
 
+### Миграция незашифрованного поля в зашифрованное
+
+```ts
+import { dualWrite, backfillRows, verifyBackfill, dualRead, rollbackRows } from "hius";
+
+// этап 1 (dual-write) — каждый insert/update начиная с этого момента:
+const { plaintext, encrypted, hash } = dualWrite(input.email, crypto, blindIndex);
+await db.insert(users).values({ email: plaintext, email_encrypted: encrypted, email_hash: hash });
+
+// этап 2 (backfill) — разовая batch-задача по уже существующим строкам:
+await backfillRows(existingRows, crypto, blindIndex, async (results) => { /* UPDATE ... */ });
+
+// этап 3 (verify) — прежде чем доверять чтениям зашифрованную колонку:
+const problems = verifyBackfill(rows, crypto).filter((r) => !r.ok);
+
+// этап 4 (dual-read) — каждое чтение начиная с этого момента:
+const email = dualRead(row, crypto); // предпочитает row.email_encrypted, иначе row.email
+
+// этап 5 (cutover) — записи перестают трогать колонку с открытым текстом.
+// этап 6 — отдельная миграция схемы удаляет её.
+```
+
+Никакой скрытый рантайм-флаг не отслеживает, на каком этапе находится
+миграция — каждый этап — отдельный деплой кода, тот же принцип explicit
+composition, что и везде в Hius: репозиторий вызывает разную функцию из
+этого файла на каждом шаге. Откат с этапов 1–4 бесплатен (передеплоить код
+предыдущего этапа — открытый текст никогда не переставал писаться). Откат с
+cutover требует `rollbackRows`, зеркального `backfillRows`: он расшифровывает
+строки, записанные после cutover — те, у которых нет открытого текста, на
+который можно откатиться — обратно в открытый текст, что всегда возможно,
+пока жив ключ, которым эти строки были зашифрованы.
+
 ## Маппинг ошибок
 
 ```ts

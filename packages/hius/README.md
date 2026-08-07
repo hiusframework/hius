@@ -109,6 +109,38 @@ effect. `KeyProvider` (`createStaticKeyProvider` for tests,
 `createEnvKeyProvider` for real deployments) can hold multiple keys at
 once for exactly that reason.
 
+### Migrating a plaintext field to encrypted
+
+```ts
+import { dualWrite, backfillRows, verifyBackfill, dualRead, rollbackRows } from "hius";
+
+// stage 1 (dual-write) — every insert/update from here on:
+const { plaintext, encrypted, hash } = dualWrite(input.email, crypto, blindIndex);
+await db.insert(users).values({ email: plaintext, email_encrypted: encrypted, email_hash: hash });
+
+// stage 2 (backfill) — a one-off batch job over pre-existing rows:
+await backfillRows(existingRows, crypto, blindIndex, async (results) => { /* UPDATE ... */ });
+
+// stage 3 (verify) — before trusting reads to the encrypted column:
+const problems = verifyBackfill(rows, crypto).filter((r) => !r.ok);
+
+// stage 4 (dual-read) — every read from here on:
+const email = dualRead(row, crypto); // prefers row.email_encrypted, falls back to row.email
+
+// stage 5 (cutover) — writes stop touching the plaintext column entirely.
+// stage 6 — a followup schema migration drops it.
+```
+
+No hidden runtime flag tracks which stage a migration is in — each stage
+is a separate code deploy, the same explicit-composition principle as
+everywhere else in Hius: a repository calls a different function from
+this file at each step. Rolling back from stages 1–4 is free (redeploy
+the previous stage's code — plaintext was never stopped being written).
+Rolling back from cutover needs `rollbackRows`, the mirror image of
+`backfillRows`: it decrypts the rows written after cutover — the ones
+with no plaintext to fall back to — back into plaintext, which is always
+possible as long as the key that encrypted them still exists.
+
 ## Error mapping
 
 ```ts
