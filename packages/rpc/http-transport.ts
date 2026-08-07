@@ -1,7 +1,23 @@
 import type { Contract } from "@hius/spec";
+import type { ValidationIssue } from "hius/http";
 import type { z } from "zod";
 import { cborCodec, type RpcCodec } from "./codec";
+import { RpcError } from "./errors";
 import type { RpcTransport } from "./index";
+
+function isValidationIssueArray(value: unknown): value is ValidationIssue[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (item) =>
+        typeof item === "object" &&
+        item !== null &&
+        "path" in item &&
+        "code" in item &&
+        "message" in item,
+    )
+  );
+}
 
 export type HttpTransportOptions = {
   // Defaults to CBOR — pass `jsonCodec` for a client that's easier to
@@ -49,9 +65,19 @@ export function createHttpTransport(
 
       if (!res.ok) {
         const body = await readBody(res, codec).catch(() => null);
-        const message =
-          body && typeof body === "object" && "error" in body ? String(body.error) : res.statusText;
-        throw new Error(`RPC call to "${contract.name}" failed (${res.status}): ${message}`);
+        const record = body && typeof body === "object" ? (body as Record<string, unknown>) : null;
+        const message = record && "error" in record ? String(record.error) : res.statusText;
+        const code = record && "code" in record ? String(record.code) : undefined;
+        const issues =
+          record && "issues" in record && isValidationIssueArray(record.issues)
+            ? record.issues
+            : undefined;
+        throw new RpcError(
+          `RPC call to "${contract.name}" failed (${res.status}): ${message}`,
+          res.status,
+          code,
+          issues,
+        );
       }
 
       const decoded = await readBody(res, codec);

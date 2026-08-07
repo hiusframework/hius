@@ -81,3 +81,29 @@ A transport that proxies through gRPC or another cross-language wire
 format is a third `RpcTransport` implementation to add if that becomes
 a real need — nothing about `Contract` or `bindContract` would change
 for it, the same way adding the HTTP transport didn't change either.
+
+## Errors
+
+`createHttpTransport` rejects with `RpcError` on a non-2xx response —
+`status`, and, when the server sent them, the same `code` and (for a
+validation failure) structured `issues` [Hius's domain errors and
+`ValidationError`](../hius/README.md#error-mapping) already carry, not
+just a flattened English message:
+
+```ts
+import { RpcError } from "@hius/rpc";
+
+try {
+  await client.call(ChargeCustomerContract, input);
+} catch (error) {
+  if (error instanceof RpcError && error.code === "VALIDATION_FAILED") {
+    // error.issues: [{ path: ["amount"], code: "too_small", message: "..." }]
+  }
+}
+```
+
+A domain error thrown inside a `bindContract`-bound handler (a
+`ConflictError` from a use case, say) is mapped to the matching HTTP
+status and carries its `code` across the wire the same way the plain
+HTTP router already does — it never gets flattened into an opaque 500
+the way a genuinely unmapped error correctly still does.

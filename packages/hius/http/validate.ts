@@ -1,13 +1,30 @@
 import type { ZodTypeAny, z } from "zod";
 import type { HiusRequest } from "./types";
 
-export class ValidationError extends Error {
-  readonly errors: Record<string, string[]>;
+// A single field-level failure, kept close to Zod's own issue shape
+// rather than flattened into an English sentence: `code` (Zod's own
+// issue code, e.g. "invalid_format", "too_small") and `path` are
+// locale-independent and stable enough to key a translation catalog by
+// — `message` is Zod's own English text, kept only as the guaranteed
+// fallback content an app can always fall back to, the same role
+// Rails' default-locale translation plays when a more specific one is
+// missing. Hius doesn't ship a catalog or resolve a locale into one —
+// see resolveLocale in ./locale for the (also app-driven) piece that
+// would feed a locale into that lookup.
+export type ValidationIssue = {
+  path: (string | number)[];
+  code: string;
+  message: string;
+};
 
-  constructor(errors: Record<string, string[]>) {
+export class ValidationError extends Error {
+  readonly code = "VALIDATION_FAILED";
+  readonly issues: ValidationIssue[];
+
+  constructor(issues: ValidationIssue[]) {
     super("Validation failed");
     this.name = "ValidationError";
-    this.errors = errors;
+    this.issues = issues;
   }
 }
 
@@ -27,8 +44,12 @@ export async function validate<T extends ZodTypeAny>(
 
   const result = schema.safeParse(raw);
   if (!result.success) {
-    const errors = result.error.flatten().fieldErrors as Record<string, string[]>;
-    throw new ValidationError(errors);
+    const issues = result.error.issues.map((issue) => ({
+      path: issue.path as (string | number)[],
+      code: issue.code,
+      message: issue.message,
+    }));
+    throw new ValidationError(issues);
   }
 
   return result.data;

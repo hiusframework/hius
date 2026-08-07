@@ -70,6 +70,7 @@ export function createRpcClient(transport: RpcTransport): RpcClient {
 
 export type { RpcCodec } from "./codec";
 export { cborCodec, codecFor, jsonCodec } from "./codec";
+export { RpcError } from "./errors";
 export { createHttpRpcServer } from "./http-server";
 export type { HttpTransportOptions } from "./http-transport";
 export { createHttpTransport } from "./http-transport";

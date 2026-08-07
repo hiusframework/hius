@@ -123,3 +123,31 @@ await withUniqueConstraintMapping(() => db.insert(users).values(newUser));
 `module.config.ts`) is meant to be drawn from — deliberate, named errors
 that may cross the domain boundary, not raw driver exceptions leaking
 through.
+
+Each carries a stable `code` (`"NOT_FOUND"`, `"CONFLICT"`, etc.) alongside
+its human-readable `.message` — the HTTP router includes both in the
+error response body, and so does `@hius/rpc`'s HTTP transport. A `code`
+is what an app should build a translated, user-facing message from
+(`code` → catalog lookup); `.message` stays English and is meant for
+logs and debugging, not for display, the same way `ValidationError`'s
+`issues` carry Zod's own stable `code`/`path` per field rather than a
+flattened English sentence. Hius doesn't ship a translation catalog or
+resolve which locale to use it in — see `resolveLocale` below for the
+one small piece of that it does provide.
+
+### Locale resolution
+
+```ts
+import { resolveLocale } from "hius/http";
+
+const locale = resolveLocale(req.raw.headers.get("accept-language"), ["en", "ru"], "en");
+```
+
+A pure function — parses `Accept-Language`, matches by quality, and
+falls back from a regional variant to its base language before falling
+back to your default (`ru-RU` → `ru` → `en`), the same fallback chain
+Rails' `config.i18n.fallbacks` implements. Nothing is set globally: call
+it in a pipe and stash the result on the request's own context with
+`req.withCtx({ locale })`, the same explicit, per-request pattern
+everything else in Hius uses — there's no ambient "current locale" to
+leak between requests, unlike a naive `I18n.locale =` assignment.

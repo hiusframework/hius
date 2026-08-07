@@ -3,6 +3,7 @@ import { z } from "zod";
 import { defineRoutes } from "@/http/builder";
 import { createHiusRequest } from "@/http/request";
 import { Router } from "@/http/router";
+import type { ValidationIssue } from "@/http/validate";
 import { validate } from "@/http/validate";
 
 const UserSchema = z.object({
@@ -46,7 +47,7 @@ describe("validate()", () => {
     expect(validate(req, UserSchema)).rejects.toThrow();
   });
 
-  test("ValidationError contains field errors", async () => {
+  test("ValidationError carries structured, locale-independent issues", async () => {
     const raw = new Request("http://localhost/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -58,10 +59,18 @@ describe("validate()", () => {
       await validate(req, UserSchema);
       expect(true).toBe(false); // should not reach here
     } catch (err: unknown) {
-      expect(err).toHaveProperty("errors");
-      const errors = (err as { errors: Record<string, string[]> }).errors;
-      expect(errors).toHaveProperty("name");
-      expect(errors).toHaveProperty("email");
+      expect(err).toHaveProperty("code", "VALIDATION_FAILED");
+      const issues = (err as { issues: ValidationIssue[] }).issues;
+      const paths = issues.map((issue) => issue.path.join("."));
+      expect(paths).toContain("name");
+      expect(paths).toContain("email");
+      // `code` is Zod's own stable issue code (e.g. "too_small",
+      // "invalid_format") — not an English sentence — so an app can key
+      // a translation catalog off it instead of parsing `message`.
+      for (const issue of issues) {
+        expect(typeof issue.code).toBe("string");
+        expect(issue.code.length).toBeGreaterThan(0);
+      }
     }
   });
 });
@@ -86,12 +95,13 @@ describe("Router catches ValidationError → 422", () => {
     expect(res.status).toBe(201);
   });
 
-  test("invalid body → 422 with errors", async () => {
+  test("invalid body → 422 with a code and structured issues", async () => {
     const router = makeRouter();
     const res = await router.handle(jsonRequest("POST", "/users", { name: "", email: "bad" }));
     expect(res.status).toBe(422);
-    const body = (await res.json()) as { errors: unknown };
-    expect(body).toHaveProperty("errors");
+    const body = (await res.json()) as { code: string; issues: ValidationIssue[] };
+    expect(body.code).toBe("VALIDATION_FAILED");
+    expect(body.issues.length).toBeGreaterThan(0);
   });
 
   test("non-JSON body → 400", async () => {

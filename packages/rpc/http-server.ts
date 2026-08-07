@@ -1,7 +1,39 @@
 import type { ContractBinding } from "@hius/spec";
-import { defineRoutes, type RouteDescriptor } from "hius/http";
-import { z } from "zod";
+import {
+  ConflictError,
+  defineRoutes,
+  ForbiddenError,
+  NotFoundError,
+  type RouteDescriptor,
+  UnauthorizedError,
+  UnprocessableError,
+  type ValidationIssue,
+} from "hius/http";
+import { ZodError, z } from "zod";
 import { codecFor, type RpcCodec } from "./codec";
+
+function issuesFrom(error: ZodError): ValidationIssue[] {
+  return error.issues.map((issue) => ({
+    path: issue.path as (string | number)[],
+    code: issue.code,
+    message: issue.message,
+  }));
+}
+
+// Mirrors the plain HTTP Router's own domain-error mapping (see
+// ../hius/http/router.ts) — a handler bound via bindContract can throw
+// the same Hius domain errors a plain defineRoutes handler can, and
+// they need the same status + code to survive the RPC transport, not
+// get flattened into an opaque 500 the way an unmapped error correctly
+// still does below.
+function domainErrorResponse(error: unknown): { status: number; code: string } | undefined {
+  if (error instanceof NotFoundError) return { status: 404, code: error.code };
+  if (error instanceof UnauthorizedError) return { status: 401, code: error.code };
+  if (error instanceof ForbiddenError) return { status: 403, code: error.code };
+  if (error instanceof ConflictError) return { status: 409, code: error.code };
+  if (error instanceof UnprocessableError) return { status: 422, code: error.code };
+  return undefined;
+}
 
 async function readRequestBody(request: Request, codec: RpcCodec): Promise<unknown> {
   const raw =
@@ -68,7 +100,10 @@ export function createHttpRpcServer(bindings: ContractBinding[]): RouteDescripto
 
       if (!binding) {
         return encodedResponse(
-          { error: `No handler bound for contract "${req.params.contract}"` },
+          {
+            error: `No handler bound for contract "${req.params.contract}"`,
+            code: "CONTRACT_NOT_FOUND",
+          },
           codec,
           404,
         );
@@ -78,8 +113,15 @@ export function createHttpRpcServer(bindings: ContractBinding[]): RouteDescripto
       try {
         input = binding.contract.input.parse(await readRequestBody(req.raw, codec));
       } catch (error) {
+        if (error instanceof ZodError) {
+          return encodedResponse(
+            { error: "Validation failed", code: "VALIDATION_FAILED", issues: issuesFrom(error) },
+            codec,
+            400,
+          );
+        }
         return encodedResponse(
-          { error: error instanceof Error ? error.message : String(error) },
+          { error: error instanceof Error ? error.message : String(error), code: "BAD_REQUEST" },
           codec,
           400,
         );
@@ -89,8 +131,17 @@ export function createHttpRpcServer(bindings: ContractBinding[]): RouteDescripto
         const output = binding.contract.output.parse(await binding.handler(input));
         return encodedResponse(output, codec);
       } catch (error) {
+        const mapped = domainErrorResponse(error);
+        if (mapped && error instanceof Error) {
+          return encodedResponse({ error: error.message, code: mapped.code }, codec, mapped.status);
+        }
+
         console.error(`[Hius] RPC handler for "${binding.contract.name}" threw:`, error);
-        return encodedResponse({ error: "Internal Server Error" }, codec, 500);
+        return encodedResponse(
+          { error: "Internal Server Error", code: "INTERNAL_ERROR" },
+          codec,
+          500,
+        );
       }
     });
   });

@@ -86,3 +86,30 @@ wire-формат — третья реализация `RpcTransport`, кото
 если в этом появится реальная необходимость: ни `Contract`, ни
 `bindContract` при этом не изменятся — так же, как их не пришлось менять
 и для добавления HTTP-транспорта.
+
+## Ошибки
+
+При не-2xx ответе `createHttpTransport` бросает `RpcError` — с `status`
+и, если сервер их прислал, теми же `code` и (для ошибки валидации)
+структурированными `issues`, что уже несут [доменные ошибки Hius и
+`ValidationError`](../hius/README.ru.md#маппинг-ошибок) — а не просто
+сплющенное английское сообщение:
+
+```ts
+import { RpcError } from "@hius/rpc";
+
+try {
+  await client.call(ChargeCustomerContract, input);
+} catch (error) {
+  if (error instanceof RpcError && error.code === "VALIDATION_FAILED") {
+    // error.issues: [{ path: ["amount"], code: "too_small", message: "..." }]
+  }
+}
+```
+
+Доменная ошибка, брошенная внутри обработчика, привязанного через
+`bindContract` (например, `ConflictError` из use case), маппится на
+подходящий HTTP-статус и несёт свой `code` через сеть точно так же, как
+это уже делает обычный HTTP-роутер — она не сплющивается в непрозрачный
+500, в отличие от действительно немаппированной ошибки, которая
+по-прежнему становится 500.

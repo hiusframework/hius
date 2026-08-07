@@ -24,6 +24,7 @@ export {
 } from "./errors";
 export type { ResourceHandlers, RouteBuilder } from "./http/builder";
 export { defineRoutes, mergeRoutes } from "./http/builder";
+export { resolveLocale } from "./http/locale";
 export { matchPath } from "./http/matcher";
 export type { ParamSchema, ParamType, PermitResult } from "./http/permit";
 export { permit, permitQuery } from "./http/permit";
@@ -51,4 +52,5 @@ export type {
   Pipe,
   RouteDescriptor,
 } from "./http/types";
+export type { ValidationIssue } from "./http/validate";
 export { ValidationError, validate } from "./http/validate";

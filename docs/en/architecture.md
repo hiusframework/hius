@@ -178,3 +178,29 @@ recoverable, because the row is still sitting there undispatched. The
 cost is that every handler must be idempotent — a retried row will call
 it again with the same payload. `hius generate event` bakes that
 reminder into the generated handler's own comment, not just here.
+
+## Errors and locale: a code, not a translation catalog
+
+Hius's domain errors (`NotFoundError`, `ConflictError`, and the rest)
+and `ValidationError`'s per-field `issues` each carry a stable, English-
+independent `code` alongside a human-readable `.message` — the HTTP
+router and `@hius/rpc`'s HTTP transport both put `code` in the response
+body, and `RpcError` on the client side surfaces it the same way. That's
+the entire extent of what the framework does about internationalizing
+error output: it hands back a `code` stable enough to key a translation
+catalog by. It does not ship the catalog, translate anything itself, or
+decide which language a response should be in.
+
+That split follows the same reasoning as everything else in this
+document: Citadel doesn't know about HTTP, and Hius doesn't know about
+your app's supported languages or how it wants to phrase a "not found"
+message to a user — those are product decisions, not framework ones.
+`resolveLocale(acceptLanguageHeader, supportedLocales, defaultLocale)`
+is the one small, optional piece Hius does provide — a pure function
+implementing the same specific-tag → base-language → default fallback
+chain Rails' `config.i18n.fallbacks` does, with no ambient state to
+plumb through. An app calls it explicitly (typically in a pipe) and
+attaches the result to the request's own `ctx`, the same way it would
+attach a current user or tenant — nothing is set globally, so there's
+nothing that can leak between requests the way a bare `I18n.locale =`
+assignment can in a threaded server.
