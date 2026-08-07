@@ -33,6 +33,8 @@ await server.connect(new StdioServerTransport());
 |---|---|
 | `get_architecture` | The full graph of every domain and its declared vs. actual dependencies |
 | `get_domain(name)` | A context pack for one domain: public API, dependencies, files, exports — without leaking any other domain's internals |
+| `get_contracts` | Every active contract across every domain — name, version, description, and input/output JSON Schema |
+| `where_does_event_go(eventName)` | Every handler subscribed to an event name — a static trace of `bus.on(eventName, ...)` calls across every domain, not a runtime one |
 | `validate_change` | The same engine `hius validate` runs, callable programmatically — a structured, corrective error on failure, not a raw exception |
 
 Domain boundaries work as the agent's context boundary here on purpose:

@@ -4,7 +4,13 @@ import { Project } from "ts-morph";
 import type { DiscoveredDomain } from "./discovery";
 import { discoverDomains } from "./discovery";
 
-function allFiles(domain: DiscoveredDomain): string[] {
+/**
+ * Every file belonging to a domain, deduped and flattened across the
+ * discovery categories — shared between {@link extractManifest} and
+ * `whereDoesEventGo` (event-tracing.ts), which both need to walk the same
+ * file set for a different purpose (import graph vs. `.on(...)` calls).
+ */
+export function domainFiles(domain: DiscoveredDomain): string[] {
   // contracts is a subset of citadel (citadel/contracts/**) — dedupe
   // through a Set so those files aren't scanned twice.
   return [
@@ -52,7 +58,7 @@ export async function extractManifest(appsDir: string): Promise<ExtractedManifes
     const dependencies = new Set<string>();
     const exportNames = new Set<string>();
 
-    for (const relFile of allFiles(domain)) {
+    for (const relFile of domainFiles(domain)) {
       const sourceFile = project.getSourceFile(`${absAppsDir}/${domain.name}/${relFile}`);
       if (!sourceFile) continue;
 

@@ -1,7 +1,13 @@
 #!/usr/bin/env bun
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { extractManifest, loadAllModuleConfigs, validateProject } from "hius";
+import {
+  extractManifest,
+  loadAllContracts,
+  loadAllModuleConfigs,
+  validateProject,
+  whereDoesEventGo,
+} from "hius";
 import { z } from "zod";
 
 export const PACKAGE_NAME = "@hius/mcp" as const;
@@ -63,6 +69,39 @@ export function createServer(appsDir: string): McpServer {
       };
 
       return { content: [{ type: "text", text: JSON.stringify(pack, null, 2) }] };
+    },
+  );
+
+  server.registerTool(
+    "get_contracts",
+    {
+      description:
+        "Every active contract across every domain — name, version, description, and input/output JSON Schema",
+    },
+    async () => {
+      const contracts = await loadAllContracts(appsDir);
+      const summary = contracts.map((contract) => ({
+        name: contract.name,
+        version: contract.version,
+        description: contract.description ?? null,
+        input: z.toJSONSchema(contract.input),
+        output: z.toJSONSchema(contract.output),
+      }));
+
+      return { content: [{ type: "text", text: JSON.stringify({ contracts: summary }, null, 2) }] };
+    },
+  );
+
+  server.registerTool(
+    "where_does_event_go",
+    {
+      description:
+        "Traces which handlers subscribe to an event name — every `bus.on(eventName, ...)` call found across every domain",
+      inputSchema: { eventName: z.string() },
+    },
+    async ({ eventName }) => {
+      const subscribers = await whereDoesEventGo(appsDir, eventName);
+      return { content: [{ type: "text", text: JSON.stringify({ subscribers }, null, 2) }] };
     },
   );
 
