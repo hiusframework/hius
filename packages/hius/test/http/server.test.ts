@@ -1,4 +1,8 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { $ } from "bun";
 import { defineRoutes } from "@/http/builder";
 import { bootstrapHttp } from "@/http/server";
 
@@ -40,5 +44,36 @@ describe("bootstrapHttp", () => {
     server = undefined;
 
     expect(fetch(`http://localhost:${port}/health`)).rejects.toThrow();
+  });
+
+  // D15 (concept_docs/hius-decisions-log.md) picked @hius/rpc's HTTP
+  // transport for Fortress↔Citadel specifically because mTLS is just
+  // Bun.serve's own native tls option — this proves opts.tls actually
+  // reaches Bun.serve rather than being silently dropped, with a real
+  // self-signed cert rather than a mocked TLS layer.
+  describe("tls option", () => {
+    test("passing tls terminates the connection over HTTPS", async () => {
+      const certDir = await mkdtemp(join(tmpdir(), "hius-server-tls-"));
+      try {
+        const keyPath = join(certDir, "key.pem");
+        const certPath = join(certDir, "cert.pem");
+        await $`openssl req -x509 -newkey rsa:2048 -nodes -keyout ${keyPath} -out ${certPath} -days 1 -subj /CN=localhost`.quiet();
+
+        const routes = defineRoutes((r) => r.get("/health", async () => new Response("ok")));
+        server = bootstrapHttp(routes, {
+          port: 0,
+          tls: { key: Bun.file(keyPath), cert: Bun.file(certPath) },
+        });
+
+        // Self-signed — the client has to opt out of chain verification
+        // to reach it at all, same as any self-signed cert in a test.
+        const res = await fetch(`https://localhost:${server.port}/health`, {
+          tls: { rejectUnauthorized: false },
+        });
+        expect(await res.text()).toBe("ok");
+      } finally {
+        await rm(certDir, { recursive: true, force: true });
+      }
+    });
   });
 });

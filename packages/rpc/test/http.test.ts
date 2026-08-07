@@ -6,7 +6,7 @@ import { z } from "zod";
 import { jsonCodec } from "@/codec";
 import { RpcError } from "@/errors";
 import { createHttpRpcServer } from "@/http-server";
-import { createHttpTransport } from "@/http-transport";
+import { createHttpTransport, withMtls } from "@/http-transport";
 import { createRpcClient } from "@/index";
 
 const ChargeCustomer = defineContract({
@@ -234,5 +234,59 @@ describe("HTTP RpcTransport (real server, real network calls)", () => {
     const result = await client.call(ChargeCustomer, { customerId: "cust_1", amount: 100 });
 
     expect(result).toEqual({ chargeId: "ch_cust_1" });
+  });
+});
+
+// D15 (concept_docs/hius-decisions-log.md): withMtls is the Fortress-side
+// half of the Fortress↔Citadel mTLS requirement — a thin wrapper over
+// Bun's already-native fetch tls option, not new certificate handling, so
+// what's worth proving is that the option actually reaches every call,
+// not TLS itself (bootstrapHttp's own tls test covers that end).
+describe("withMtls", () => {
+  test("attaches the given tls option to every call", async () => {
+    const calls: Array<[unknown, RequestInit | undefined]> = [];
+    const fakeFetch = (async (input: unknown, init?: RequestInit) => {
+      calls.push([input, init]);
+      return new Response("ok");
+    }) as unknown as typeof fetch;
+
+    const tls = { cert: "cert-pem", key: "key-pem", ca: "ca-pem" };
+    const mtlsFetch = withMtls(tls, fakeFetch);
+
+    await mtlsFetch("https://citadel.internal/rpc/ChargeCustomer", {
+      method: "POST",
+      headers: { "content-type": "application/cbor" },
+    });
+
+    expect(calls).toHaveLength(1);
+    const [url, init] = calls[0] ?? [];
+    expect(url).toBe("https://citadel.internal/rpc/ChargeCustomer");
+    expect(init).toMatchObject({
+      method: "POST",
+      headers: { "content-type": "application/cbor" },
+      tls,
+    });
+  });
+
+  test("composes with createHttpTransport as its fetch option", async () => {
+    const calls: RequestInit[] = [];
+    const fakeFetch = (async (_input: unknown, init?: RequestInit) => {
+      calls.push(init as RequestInit);
+      return new Response(JSON.stringify({ chargeId: "ch_1" }), {
+        headers: { "content-type": "application/json" },
+      });
+    }) as unknown as typeof fetch;
+
+    const tls = { cert: "cert-pem", key: "key-pem", ca: "ca-pem" };
+    const client = createRpcClient(
+      createHttpTransport("https://citadel.internal", {
+        codec: jsonCodec,
+        fetch: withMtls(tls, fakeFetch),
+      }),
+    );
+
+    await client.call(ChargeCustomer, { customerId: "cust_1", amount: 100 });
+
+    expect(calls[0]).toMatchObject({ tls });
   });
 });

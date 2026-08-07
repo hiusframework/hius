@@ -25,9 +25,28 @@ export type HttpTransportOptions = {
   codec?: RpcCodec;
   // Injectable so tests can exercise createHttpTransport without a real
   // server listening, the same seam createLocalTransport's tests use for
-  // the handler side.
+  // the handler side. Also how a caller attaches mTLS — see withMtls.
   fetch?: typeof fetch;
 };
+
+// Bun's fetch accepts a `tls` option (client certificate + CA) natively,
+// via BunFetchRequestInit — a Bun-global ambient type, not something this
+// file declares or imports.
+type FetchTlsOptions = NonNullable<BunFetchRequestInit["tls"]>;
+
+/**
+ * Wraps a fetch function so every call carries the given client
+ * certificate — the Fortress-side half of the Fortress↔Citadel mTLS
+ * requirement (D15, concept_docs/hius-decisions-log.md): pass the result
+ * as `createHttpTransport`'s `fetch` option instead of the global fetch.
+ * `@hius/rpc` itself stays transport-agnostic about TLS — this is a thin
+ * helper over what Bun's fetch already does natively, not new crypto or
+ * certificate handling.
+ */
+export function withMtls(tls: FetchTlsOptions, fetchFn: typeof fetch = fetch): typeof fetch {
+  return ((input: Parameters<typeof fetch>[0], init?: BunFetchRequestInit) =>
+    fetchFn(input, { ...init, tls } as BunFetchRequestInit)) as typeof fetch;
+}
 
 async function readBody(response: Response, codec: RpcCodec): Promise<unknown> {
   const raw =
