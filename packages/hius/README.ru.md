@@ -89,6 +89,24 @@ await relayOutboxEvents(db, bus);
 почему это значит, что каждый обработчик обязан быть идемпотентным, см.
 [Архитектуру](../../docs/ru/architecture.md#события-outbox-и-гарантии-доставки).
 
+## `hius/console` — ядро REPL-вычисления
+
+```ts
+import { buildConsoleContext, evalJs, evalSql } from "hius/console";
+
+const context = await buildConsoleContext("domains");
+await evalJs("manifest.domains.length", context, { log: console.log, error: console.error });
+```
+
+Построчное вычисление, вокруг которого крутится цикл `hius console`/
+`hius db` ([`@hius/cli`](../cli/README.ru.md)), и которое напрямую
+вызывают встроенные console/db-панели
+[`@hius/tui`](../tui/README.ru.md) — одно ядро, два интерфейса, тот же
+принцип, что и везде в Hius. Более узкая точка входа, чем полный
+барабан `hius` (тот же паттерн, что и у
+[`hius/http`](#http-явная-композиция-без-контейнера)) — потребителю,
+которому нужно только это, не приходится тянуть остальное.
+
 ## Query AST и Encryption Layer
 
 ```ts

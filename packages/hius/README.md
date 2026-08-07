@@ -90,6 +90,23 @@ await relayOutboxEvents(db, bus);
 — see [Architecture](../../docs/en/architecture.md#events-outbox-and-delivery-guarantees)
 for why that means every handler must be idempotent.
 
+## `hius/console` — REPL evaluation core
+
+```ts
+import { buildConsoleContext, evalJs, evalSql } from "hius/console";
+
+const context = await buildConsoleContext("domains");
+await evalJs("manifest.domains.length", context, { log: console.log, error: console.error });
+```
+
+The line-at-a-time evaluation `hius console`/`hius db`
+([`@hius/cli`](../cli/README.md)) loop over, and
+[`@hius/tui`](../tui/README.md)'s embedded console/db panes call
+directly — one core, two interfaces, same reasoning as everywhere else
+in Hius. A narrower entry point than the full `hius` barrel (same
+pattern as [`hius/http`](#http-explicit-composition-no-container)), so
+a consumer that only needs this doesn't pull in the rest.
+
 ## Query AST and the Encryption Layer
 
 ```ts
